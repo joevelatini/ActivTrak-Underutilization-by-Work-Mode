@@ -296,7 +296,7 @@
 
         <!-- Results container -->
         <div id="resultsContainer" class="hidden">
-            <h2>Underutilization by Work Mode (Productivity Goal: <span id="goalDisplay">${productivityGoalInput.value}</span> hrs)</h2>
+            <h2>Underutilization by Work Mode (Productivity Goal: <span id="goalDisplay">7.5</span> hrs)</h2>
             
             <div class="metrics-container">
                 <h3>Location Summary - Employees Below Goal</h3>
@@ -364,6 +364,7 @@
         const errorContainer = document.getElementById('errorContainer');
         const loadingContainer = document.getElementById('loadingContainer');
         const resultsContainer = document.getElementById('resultsContainer');
+        const goalDisplay = document.getElementById('goalDisplay');
         
         // Event listeners
         csvFileInput.addEventListener('change', handleFileUpload);
@@ -373,6 +374,12 @@
         meetingHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
         analyzeButton.addEventListener('click', analyzeData);
         resetButton.addEventListener('click', resetApplication);
+        productivityGoalInput.addEventListener('change', updateGoalDisplay);
+        
+        // Update goal display when input changes
+        function updateGoalDisplay() {
+            goalDisplay.textContent = productivityGoalInput.value;
+        }
         
         // Functions
         function handleFileUpload(event) {
@@ -464,6 +471,8 @@
                 // Process the data
                 const employeeData = data.map((row, index) => {
                     const location = row[selectedColumns.location] || 'Unknown';
+                    
+                    // Ensure values are properly parsed as numbers
                     const productiveHours = parseFloat(row[selectedColumns.productiveHours]) || 0;
                     const meetingHours = parseFloat(row[selectedColumns.meetingHours]) || 0;
                     const combinedHours = productiveHours + meetingHours;
@@ -488,9 +497,6 @@
                     const employees = grouped[location];
                     const count = employees.length;
                     const percentage = ((count / employeeData.length) * 100).toFixed(1);
-                    
-                    // Calculate total delta hours (positive values only - underperforming)
-                    const deltaHours = employees.reduce((sum, emp) => sum + Math.max(0, emp.delta), 0);
                     
                     // Filter employees that are under the productivity goal
                     const underGoalEmployees = employees.filter(emp => emp.isUnderGoal);
@@ -534,12 +540,16 @@
                     employeeData: employeeData.slice(0, 10) // Just include first 10 for sample
                 };
                 
+                // Update the goal display
+                goalDisplay.textContent = productivityGoalInput.value;
+                
                 // Display the results
                 displayResults();
                 
             } catch (err) {
                 loadingContainer.classList.add('hidden');
                 showError(`Analysis error: ${err.message}`);
+                console.error(err);
             }
         }
         
@@ -558,7 +568,7 @@
                 row.className = 'location-row';
                 
                 // Calculate width percentage (max 85%)
-                const widthPercentage = Math.min(85, (location.underGoalCount / maxCount) * 85);
+                const widthPercentage = Math.min(85, maxCount > 0 ? (location.underGoalCount / maxCount) * 85 : 0);
                 
                 // Display count of employees under goal
                 row.innerHTML = `
@@ -569,7 +579,7 @@
                     <div class="percentage">${location.percentage}%</div>
                     <div class="metrics">
                         <div class="fte">${location.fte} FTE</div>
-                        <div class="cost">${location.monthlyCost.toLocaleString()}</div>
+                        <div class="cost">$${location.monthlyCost.toLocaleString()}</div>
                     </div>
                 `;
                 
@@ -594,9 +604,9 @@
                 insights = [
                     `Employees working in <strong>${leastProductive}</strong> mode show the lowest average productivity`,
                     `<strong>${mostProductive}</strong> workers demonstrate the highest productivity levels`,
-                    `The largest workforce investment is in the <strong>${leastProductive}</strong> category (${productivitySorted[0].fte} FTE, ${productivitySorted[0].monthlyCost.toLocaleString()})`,
+                    `The largest workforce investment is in the <strong>${leastProductive}</strong> category (${productivitySorted[0].fte} FTE, $${productivitySorted[0].monthlyCost.toLocaleString()})`,
                     `${analysisResults.totalFTE} total FTE across all work modes`,
-                    `Current monthly cost across all locations: ${analysisResults.totalMonthlyCost.toLocaleString()}`
+                    `Current monthly cost across all locations: $${analysisResults.totalMonthlyCost.toLocaleString()}`
                 ];
                 
                 // Add remote vs office comparison if both exist
@@ -652,7 +662,116 @@
             
             // Create sample data
             const sampleData = [
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.5 },
+                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                
+                { Location: 'Hybrid', ProductiveHours: 5.8, MeetingHours: 0.7 },
+                { Location: 'Hybrid', ProductiveHours: 6.0, MeetingHours: 0.8 },
+                { Location: 'Hybrid', ProductiveHours: 5.5, MeetingHours: 0.7 },
+                { Location: 'Hybrid', ProductiveHours: 5.9, MeetingHours: 0.8 },
+                { Location: 'Hybrid', ProductiveHours: 5.7, MeetingHours: 0.7 },
+                { Location: 'Hybrid', ProductiveHours: 6.1, MeetingHours: 0.8 },
+                { Location: 'Hybrid', ProductiveHours: 5.6, MeetingHours: 0.7 },
+                
+                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.4, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 5.8, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
+            ];
+            
+            // Set data and display column selectors
+            data = sampleData;
+            headers = Object.keys(sampleData[0]);
+            
+            // Populate column selectors
+            populateColumnSelectors();
+            
+            // Auto-select correct columns
+            locationColumnSelect.value = 'Location';
+            productiveHoursColumnSelect.value = 'ProductiveHours';
+            meetingHoursColumnSelect.value = 'MeetingHours';
+            updateAnalyzeButtonState();
+            
+            columnSelectors.classList.remove('hidden');
+            loadingContainer.classList.add('hidden');
+        }
+        
+        // Reset function to start over
+        function resetApplication() {
+            // Clear the file input
+            csvFileInput.value = '';
+            
+            // Reset data arrays
+            data = [];
+            headers = [];
+            
+            // Reset selected columns
+            selectedColumns = {
+                location: '',
+                productiveHours: '',
+                meetingHours: ''
+            };
+            
+            // Reset column selectors
+            while (locationColumnSelect.options.length > 1) {
+                locationColumnSelect.remove(1);
+            }
+            
+            while (productiveHoursColumnSelect.options.length > 1) {
+                productiveHoursColumnSelect.remove(1);
+            }
+            
+            while (meetingHoursColumnSelect.options.length > 1) {
+                meetingHoursColumnSelect.remove(1);
+            }
+            
+            // Reset selections
+            locationColumnSelect.selectedIndex = 0;
+            productiveHoursColumnSelect.selectedIndex = 0;
+            meetingHoursColumnSelect.selectedIndex = 0;
+            
+            // Disable analyze button
+            analyzeButton.disabled = true;
+            
+            // Hide results and column selectors
+            resultsContainer.classList.add('hidden');
+            columnSelectors.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            
+            // Reset analysis results
+            analysisResults = null;
+        }
+        
+        // Initialize the goal display
+        updateGoalDisplay();
+    </script>
+</body>
+</html>,
+                { Location: 'Remote Only', ProductiveHours: 6.1, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 5.9, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.5, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
+                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },iveHours: 4.7, MeetingHours: 0.5 },
                 { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.5 },
                 { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.5 },
                 { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
@@ -692,124 +811,4 @@
                 { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
                 { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
                 { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                
-                { Location: 'Hybrid', ProductiveHours: 5.8, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 6.0, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.5, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 5.9, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.7, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 6.1, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.6, MeetingHours: 0.7 },
-                
-                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.4, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 5.8, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.1, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 5.9, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.5, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
-            ];
-            
-            // Set data and display column selectors
-            data = sampleData;
-            headers = Object.keys(sampleData[0]);
-            
-            // Clear existing options except the first one
-            while (locationColumnSelect.options.length > 1) {
-                locationColumnSelect.remove(1);
-            }
-            
-            while (productiveHoursColumnSelect.options.length > 1) {
-                productiveHoursColumnSelect.remove(1);
-            }
-            
-            // Add new options
-            headers.forEach(header => {
-                const locationOption = document.createElement('option');
-                locationOption.value = header;
-                locationOption.textContent = header;
-                locationColumnSelect.appendChild(locationOption);
-                
-                const productiveOption = document.createElement('option');
-                productiveOption.value = header;
-                productiveOption.textContent = header;
-                productiveHoursColumnSelect.appendChild(productiveOption);
-            });
-            
-            // Auto-select correct columns
-            locationColumnSelect.value = 'Location';
-            productiveHoursColumnSelect.value = 'ProductiveHours';
-            meetingHoursColumnSelect.value = 'MeetingHours';
-            updateAnalyzeButtonState();
-            
-            columnSelectors.classList.remove('hidden');
-            loadingContainer.classList.add('hidden');
-        }
-        
-        // Reset function to start over
-        function resetApplication() {
-            // Clear the file input
-            csvFileInput.value = '';
-            
-            // Reset data arrays
-            data = [];
-            headers = [];
-            
-            // Reset selected columns
-            selectedColumns = {
-                location: '',
-                productiveHours: '',
-                meetingHours: ''
-            };
-            
-            // Reset column selectors
-            while (locationColumnSelect.options.length > 1) {
-                locationColumnSelect.remove(1);
-            }
-            
-            while (productiveHoursColumnSelect.options.length > 1) {
-                productiveHoursColumnSelect.remove(1);
-            }
-            
-            // Reset selections
-            locationColumnSelect.selectedIndex = 0;
-            productiveHoursColumnSelect.selectedIndex = 0;
-            meetingHoursColumnSelect.selectedIndex = 0;
-            
-            // Disable analyze button
-            analyzeButton.disabled = true;
-            
-            // Hide results and column selectors
-            resultsContainer.classList.add('hidden');
-            columnSelectors.classList.add('hidden');
-            errorContainer.classList.add('hidden');
-            
-            // Reset analysis results
-            analysisResults = null;
-        }
-    </script>
-</body>
-</html>
+                { Location: 'Office Only', Product
