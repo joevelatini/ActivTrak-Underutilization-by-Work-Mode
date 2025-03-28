@@ -340,436 +340,379 @@
     </div>
 
     <script>
-        // Main variables
-        let data = [];
-        let headers = [];
-        let selectedColumns = {
-            location: '',
-            productiveHours: '',
-            meetingHours: ''
-        };
-        let analysisResults = null;
-        
-        // DOM elements
-        const productivityGoalInput = document.getElementById('productivityGoal');
-        const annualSalaryInput = document.getElementById('annualSalary');
-        const csvFileInput = document.getElementById('csvFile');
-        const demoButton = document.getElementById('demoButton');
-        const columnSelectors = document.getElementById('columnSelectors');
-        const locationColumnSelect = document.getElementById('locationColumn');
-        const productiveHoursColumnSelect = document.getElementById('productiveHoursColumn');
-        const meetingHoursColumnSelect = document.getElementById('meetingHoursColumn');
-        const analyzeButton = document.getElementById('analyzeButton');
-        const resetButton = document.getElementById('resetButton');
-        const errorContainer = document.getElementById('errorContainer');
-        const loadingContainer = document.getElementById('loadingContainer');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const goalDisplay = document.getElementById('goalDisplay');
-        
-        // Event listeners
-        csvFileInput.addEventListener('change', handleFileUpload);
-        demoButton.addEventListener('click', useSampleData);
-        locationColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-        productiveHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-        meetingHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-        analyzeButton.addEventListener('click', analyzeData);
-        resetButton.addEventListener('click', resetApplication);
-        productivityGoalInput.addEventListener('change', updateGoalDisplay);
-        
-        // Update goal display when input changes
-        function updateGoalDisplay() {
-            goalDisplay.textContent = productivityGoalInput.value;
-        }
-        
-        // Functions
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            loadingContainer.classList.remove('hidden');
-            errorContainer.classList.add('hidden');
-            resultsContainer.classList.add('hidden');
-            
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    loadingContainer.classList.add('hidden');
-                    
-                    if (results.data && results.data.length > 0) {
-                        data = results.data;
-                        headers = results.meta.fields;
-                        populateColumnSelectors();
-                        columnSelectors.classList.remove('hidden');
-                    } else {
-                        showError("No data found in the CSV file.");
-                    }
-                },
-                error: function(error) {
-                    loadingContainer.classList.add('hidden');
-                    showError(`Error parsing CSV: ${error.message}`);
-                }
-            });
-        }
-        
-        function populateColumnSelectors() {
-            // Clear existing options except the first one
-            while (locationColumnSelect.options.length > 1) {
-                locationColumnSelect.remove(1);
-            }
-            
-            while (productiveHoursColumnSelect.options.length > 1) {
-                productiveHoursColumnSelect.remove(1);
-            }
-            
-            while (meetingHoursColumnSelect.options.length > 1) {
-                meetingHoursColumnSelect.remove(1);
-            }
-            
-            // Add new options
-            headers.forEach(header => {
-                const locationOption = document.createElement('option');
-                locationOption.value = header;
-                locationOption.textContent = header;
-                locationColumnSelect.appendChild(locationOption);
-                
-                const productiveOption = document.createElement('option');
-                productiveOption.value = header;
-                productiveOption.textContent = header;
-                productiveHoursColumnSelect.appendChild(productiveOption);
-                
-                const meetingOption = document.createElement('option');
-                meetingOption.value = header;
-                meetingOption.textContent = header;
-                meetingHoursColumnSelect.appendChild(meetingOption);
-            });
-        }
-        
-        function updateAnalyzeButtonState() {
-            selectedColumns.location = locationColumnSelect.value;
-            selectedColumns.productiveHours = productiveHoursColumnSelect.value;
-            selectedColumns.meetingHours = meetingHoursColumnSelect.value;
-            
-            analyzeButton.disabled = !selectedColumns.location || !selectedColumns.productiveHours;
-        }
-        
-        function showError(message) {
-            errorContainer.textContent = message;
-            errorContainer.classList.remove('hidden');
-        }
-        
-        function analyzeData() {
-            loadingContainer.classList.remove('hidden');
-            errorContainer.classList.add('hidden');
-            resultsContainer.classList.add('hidden');
-            
-            const productivityGoal = parseFloat(productivityGoalInput.value);
-            const annualSalary = parseFloat(annualSalaryInput.value);
-            
-            try {
-                // Process the data
-                const employeeData = data.map((row, index) => {
-                    const location = row[selectedColumns.location] || 'Unknown';
-                    
-                    // Ensure values are properly parsed as numbers
-                    const productiveHours = parseFloat(row[selectedColumns.productiveHours]) || 0;
-                    const meetingHours = parseFloat(row[selectedColumns.meetingHours]) || 0;
-                    const combinedHours = productiveHours + meetingHours;
-                    const delta = productivityGoal - combinedHours; // Positive delta means under goal
-                    
-                    return {
-                        employeeId: `Emp${index + 1}`,
-                        location,
-                        productiveHours,
-                        meetingHours,
-                        combinedHours,
-                        delta,
-                        isUnderGoal: combinedHours < productivityGoal
-                    };
-                });
-                
-                // Group by location
-                const grouped = _.groupBy(employeeData, 'location');
-                
-                // Calculate metrics for each location
-                const locations = Object.keys(grouped).map(location => {
-                    const employees = grouped[location];
-                    const count = employees.length;
-                    const percentage = ((count / employeeData.length) * 100).toFixed(1);
-                    
-                    // Filter employees that are under the productivity goal
-                    const underGoalEmployees = employees.filter(emp => emp.isUnderGoal);
-                    const underGoalCount = underGoalEmployees.length;
-                    
-                    // Calculate total delta hours (only for underperforming employees)
-                    const totalDelta = underGoalEmployees.reduce((sum, emp) => sum + emp.delta, 0);
-                    
-                    // Calculate FTE based on delta hours
-                    const fte = Math.round(totalDelta / 8);
-                    const monthlyCost = Math.round(fte * (annualSalary / 12));
-                    
-                    return {
-                        location,
-                        count,
-                        underGoalCount,
-                        percentage,
-                        totalDelta: totalDelta.toFixed(2),
-                        fte,
-                        monthlyCost
-                    };
-                });
-                
-                // Sort locations by underperforming employee count (descending)
-                const sortedLocations = _.sortBy(locations, loc => -loc.underGoalCount);
-                
-                // Calculate undergoal totals
-                const totalUnderGoal = employeeData.filter(emp => emp.isUnderGoal).length;
-                const totalDelta = employeeData.filter(emp => emp.isUnderGoal).reduce((sum, emp) => sum + emp.delta, 0);
-                const totalFTE = Math.round(totalDelta / 8);
-                const totalMonthlyCost = Math.round(totalFTE * (annualSalary / 12));
-                
-                // Set the results
-                analysisResults = {
-                    locations: sortedLocations,
-                    totalEmployees: employeeData.length,
-                    totalUnderGoal,
-                    totalDelta,
-                    totalFTE,
-                    totalMonthlyCost,
-                    employeeData: employeeData.slice(0, 10) // Just include first 10 for sample
-                };
-                
-                // Update the goal display
-                goalDisplay.textContent = productivityGoalInput.value;
-                
-                // Display the results
-                displayResults();
-                
-            } catch (err) {
-                loadingContainer.classList.add('hidden');
-                showError(`Analysis error: ${err.message}`);
-                console.error(err);
-            }
-        }
-        
-        function displayResults() {
-            if (!analysisResults) return;
-            
-            // Update location rows
-            const locationRows = document.getElementById('locationRows');
-            locationRows.innerHTML = '';
-            
-            // Find max count for scaling bars
-            const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount || 0));
-            
-            analysisResults.locations.forEach(location => {
-                const row = document.createElement('div');
-                row.className = 'location-row';
-                
-                // Calculate width percentage (max 85%)
-                const widthPercentage = Math.min(85, maxCount > 0 ? (location.underGoalCount / maxCount) * 85 : 0);
-                
-                // Display count of employees under goal
-                row.innerHTML = `
-                    <div class="location-label">${location.location}</div>
-                    <div class="bar-container">
-                        <div class="bar" style="width: ${widthPercentage}%">${location.underGoalCount}</div>
-                    </div>
-                    <div class="percentage">${location.percentage}%</div>
-                    <div class="metrics">
-                        <div class="fte">${location.fte} FTE</div>
-                        <div class="cost">$${location.monthlyCost.toLocaleString()}</div>
-                    </div>
-                `;
-                
-                locationRows.appendChild(row);
-            });
-            
-            // Update insights
-            const insightsList = document.getElementById('insightsList');
-            insightsList.innerHTML = '';
-            
-            // Generate insights
-            let insights = [];
-            
-            // Sort locations by productivity (highest delta first)
-            const productivitySorted = _.sortBy(analysisResults.locations, loc => -loc.fte);
-            
-            // Add insights based on the data
-            if (productivitySorted.length > 0) {
-                const leastProductive = productivitySorted[0].location;
-                const mostProductive = productivitySorted[productivitySorted.length - 1].location;
-                
-                insights = [
-                    `Employees working in <strong>${leastProductive}</strong> mode show the lowest average productivity`,
-                    `<strong>${mostProductive}</strong> workers demonstrate the highest productivity levels`,
-                    `The largest workforce investment is in the <strong>${leastProductive}</strong> category (${productivitySorted[0].fte} FTE, $${productivitySorted[0].monthlyCost.toLocaleString()})`,
-                    `${analysisResults.totalFTE} total FTE across all work modes`,
-                    `Current monthly cost across all locations: $${analysisResults.totalMonthlyCost.toLocaleString()}`
-                ];
-                
-                // Add remote vs office comparison if both exist
-                const hasOffice = analysisResults.locations.some(loc => 
-                    loc.location.toLowerCase().includes('office'));
-                const hasRemote = analysisResults.locations.some(loc => 
-                    loc.location.toLowerCase().includes('remote'));
-                
-                if (hasOffice && hasRemote) {
-                    insights.push('Employees with some remote ability seem more productive overall compared to office-only staff');
-                }
-            }
-            
-            // Add insights to the list
-            insights.forEach(insight => {
-                const li = document.createElement('li');
-                li.innerHTML = insight;
-                insightsList.appendChild(li);
-            });
-            
-            // Update sample data
-            const sampleTableBody = document.getElementById('sampleTableBody');
-            sampleTableBody.innerHTML = '';
-            
-            analysisResults.employeeData.forEach((employee, index) => {
-                const row = document.createElement('tr');
-                
-                row.innerHTML = `
-                    <td>${employee.employeeId}</td>
-                    <td>${employee.location}</td>
-                    <td class="text-right">${employee.productiveHours.toFixed(2)}</td>
-                    <td class="text-right">${employee.meetingHours.toFixed(2)}</td>
-                    <td class="text-right">${employee.combinedHours.toFixed(2)}</td>
-                    <td class="text-right">${productivityGoalInput.value}</td>
-                    <td class="text-right">${employee.delta.toFixed(2)}</td>
-                `;
-                
-                sampleTableBody.appendChild(row);
-            });
-            
-            // Show results
-            resultsContainer.classList.remove('hidden');
-            loadingContainer.classList.add('hidden');
-        }
-        
-        function useSampleData() {
-            loadingContainer.classList.remove('hidden');
-            errorContainer.classList.add('hidden');
-            resultsContainer.classList.add('hidden');
-            
-            // Clear file input
-            csvFileInput.value = '';
-            
-            // Create sample data
-            const sampleData = [
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                
-                { Location: 'Hybrid', ProductiveHours: 5.8, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 6.0, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.5, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 5.9, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.7, MeetingHours: 0.7 },
-                { Location: 'Hybrid', ProductiveHours: 6.1, MeetingHours: 0.8 },
-                { Location: 'Hybrid', ProductiveHours: 5.6, MeetingHours: 0.7 },
-                
-                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.4, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 5.8, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.1, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 5.9, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.5, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
-            ];
-            
-            // Set data and display column selectors
-            data = sampleData;
-            headers = Object.keys(sampleData[0]);
-            
-            // Populate column selectors
-            populateColumnSelectors();
-            
-            // Auto-select correct columns
-            locationColumnSelect.value = 'Location';
-            productiveHoursColumnSelect.value = 'ProductiveHours';
-            meetingHoursColumnSelect.value = 'MeetingHours';
-            updateAnalyzeButtonState();
-            
-            columnSelectors.classList.remove('hidden');
-            loadingContainer.classList.add('hidden');
-        }
-        
-        // Reset function to start over
-        function resetApplication() {
-            // Clear the file input
-            csvFileInput.value = '';
-            
-            // Reset data arrays
-            data = [];
-            headers = [];
-            
-            // Reset selected columns
-            selectedColumns = {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Main variables
+            let data = [];
+            let headers = [];
+            let selectedColumns = {
                 location: '',
                 productiveHours: '',
                 meetingHours: ''
             };
+            let analysisResults = null;
             
-            // Reset column selectors
-            while (locationColumnSelect.options.length > 1) {
-                locationColumnSelect.remove(1);
+            // DOM elements
+            const productivityGoalInput = document.getElementById('productivityGoal');
+            const annualSalaryInput = document.getElementById('annualSalary');
+            const csvFileInput = document.getElementById('csvFile');
+            const demoButton = document.getElementById('demoButton');
+            const columnSelectors = document.getElementById('columnSelectors');
+            const locationColumnSelect = document.getElementById('locationColumn');
+            const productiveHoursColumnSelect = document.getElementById('productiveHoursColumn');
+            const meetingHoursColumnSelect = document.getElementById('meetingHoursColumn');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const resetButton = document.getElementById('resetButton');
+            const errorContainer = document.getElementById('errorContainer');
+            const loadingContainer = document.getElementById('loadingContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const goalDisplay = document.getElementById('goalDisplay');
+            
+            // Event listeners
+            csvFileInput.addEventListener('change', handleFileUpload);
+            demoButton.addEventListener('click', useSampleData);
+            locationColumnSelect.addEventListener('change', updateAnalyzeButtonState);
+            productiveHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
+            meetingHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
+            analyzeButton.addEventListener('click', analyzeData);
+            resetButton.addEventListener('click', resetApplication);
+            productivityGoalInput.addEventListener('change', updateGoalDisplay);
+            
+            // Update goal display when input changes
+            function updateGoalDisplay() {
+                goalDisplay.textContent = productivityGoalInput.value;
             }
             
-            while (productiveHoursColumnSelect.options.length > 1) {
-                productiveHoursColumnSelect.remove(1);
+            // Functions
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                loadingContainer.classList.remove('hidden');
+                errorContainer.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        loadingContainer.classList.add('hidden');
+                        
+                        if (results.data && results.data.length > 0) {
+                            data = results.data;
+                            headers = results.meta.fields;
+                            populateColumnSelectors();
+                            columnSelectors.classList.remove('hidden');
+                        } else {
+                            showError("No data found in the CSV file.");
+                        }
+                    },
+                    error: function(error) {
+                        loadingContainer.classList.add('hidden');
+                        showError(`Error parsing CSV: ${error.message}`);
+                    }
+                });
             }
             
-            while (meetingHoursColumnSelect.options.length > 1) {
-                meetingHoursColumnSelect.remove(1);
+            function populateColumnSelectors() {
+                // Clear existing options except the first one
+                while (locationColumnSelect.options.length > 1) {
+                    locationColumnSelect.remove(1);
+                }
+                
+                while (productiveHoursColumnSelect.options.length > 1) {
+                    productiveHoursColumnSelect.remove(1);
+                }
+                
+                while (meetingHoursColumnSelect.options.length > 1) {
+                    meetingHoursColumnSelect.remove(1);
+                }
+                
+                // Add new options
+                headers.forEach(header => {
+                    const locationOption = document.createElement('option');
+                    locationOption.value = header;
+                    locationOption.textContent = header;
+                    locationColumnSelect.appendChild(locationOption);
+                    
+                    const productiveOption = document.createElement('option');
+                    productiveOption.value = header;
+                    productiveOption.textContent = header;
+                    productiveHoursColumnSelect.appendChild(productiveOption);
+                    
+                    const meetingOption = document.createElement('option');
+                    meetingOption.value = header;
+                    meetingOption.textContent = header;
+                    meetingHoursColumnSelect.appendChild(meetingOption);
+                });
             }
             
-            // Reset selections
-            locationColumnSelect.selectedIndex = 0;
-            productiveHoursColumnSelect.selectedIndex = 0;
-            meetingHoursColumnSelect.selectedIndex = 0;
+            function updateAnalyzeButtonState() {
+                selectedColumns.location = locationColumnSelect.value;
+                selectedColumns.productiveHours = productiveHoursColumnSelect.value;
+                selectedColumns.meetingHours = meetingHoursColumnSelect.value;
+                
+                analyzeButton.disabled = !selectedColumns.location || !selectedColumns.productiveHours;
+            }
             
-            // Disable analyze button
-            analyzeButton.disabled = true;
+            function showError(message) {
+                errorContainer.textContent = message;
+                errorContainer.classList.remove('hidden');
+            }
             
-            // Hide results and column selectors
-            resultsContainer.classList.add('hidden');
-            columnSelectors.classList.add('hidden');
-            errorContainer.classList.add('hidden');
+            function analyzeData() {
+                loadingContainer.classList.remove('hidden');
+                errorContainer.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                
+                const productivityGoal = parseFloat(productivityGoalInput.value);
+                const annualSalary = parseFloat(annualSalaryInput.value);
+                
+                try {
+                    // Debug output to verify data structure
+                    console.log("Analyzing data:", data);
+                    console.log("Selected columns:", selectedColumns);
+                    
+                    // Process the data
+                    const employeeData = data.map((row, index) => {
+                        // Get the location value, using bracket notation for proper field access
+                        const location = row[selectedColumns.location] || 'Unknown';
+                        
+                        // Ensure values are properly parsed as numbers
+                        const productiveHours = parseFloat(row[selectedColumns.productiveHours]) || 0;
+                        const meetingHours = parseFloat(row[selectedColumns.meetingHours]) || 0;
+                        const combinedHours = productiveHours + meetingHours;
+                        const delta = productivityGoal - combinedHours; // Positive delta means under goal
+                        
+                        return {
+                            employeeId: `Emp${index + 1}`,
+                            location,
+                            productiveHours,
+                            meetingHours,
+                            combinedHours,
+                            delta,
+                            isUnderGoal: combinedHours < productivityGoal
+                        };
+                    });
+                    
+                    // Group by location
+                    const grouped = _.groupBy(employeeData, 'location');
+                    
+                    // Calculate metrics for each location
+                    const locations = Object.keys(grouped).map(location => {
+                        const employees = grouped[location];
+                        const count = employees.length;
+                        const percentage = ((count / employeeData.length) * 100).toFixed(1);
+                        
+                        // Filter employees that are under the productivity goal
+                        const underGoalEmployees = employees.filter(emp => emp.isUnderGoal);
+                        const underGoalCount = underGoalEmployees.length;
+                        
+                        // Calculate total delta hours (only for underperforming employees)
+                        const totalDelta = underGoalEmployees.reduce((sum, emp) => sum + emp.delta, 0);
+                        
+                        // Calculate FTE based on delta hours
+                        const fte = Math.round(totalDelta / 8);
+                        const monthlyCost = Math.round(fte * (annualSalary / 12));
+                        
+                        return {
+                            location,
+                            count,
+                            underGoalCount,
+                            percentage,
+                            totalDelta: totalDelta.toFixed(2),
+                            fte,
+                            monthlyCost
+                        };
+                    });
+                    
+                    // Sort locations by underperforming employee count (descending)
+                    const sortedLocations = _.sortBy(locations, loc => -loc.underGoalCount);
+                    
+                    // Calculate undergoal totals
+                    const totalUnderGoal = employeeData.filter(emp => emp.isUnderGoal).length;
+                    const totalDelta = employeeData.filter(emp => emp.isUnderGoal).reduce((sum, emp) => sum + emp.delta, 0);
+                    const totalFTE = Math.round(totalDelta / 8);
+                    const totalMonthlyCost = Math.round(totalFTE * (annualSalary / 12));
+                    
+                    // Set the results
+                    analysisResults = {
+                        locations: sortedLocations,
+                        totalEmployees: employeeData.length,
+                        totalUnderGoal,
+                        totalDelta,
+                        totalFTE,
+                        totalMonthlyCost,
+                        employeeData: employeeData.slice(0, 10) // Just include first 10 for sample
+                    };
+                    
+                    // Update the goal display
+                    goalDisplay.textContent = productivityGoalInput.value;
+                    
+                    // Display the results
+                    displayResults();
+                    
+                } catch (err) {
+                    loadingContainer.classList.add('hidden');
+                    showError(`Analysis error: ${err.message}`);
+                    console.error(err);
+                }
+            }
             
-            // Reset analysis results
-            analysisResults = null;
-        }
-        
-        // Initialize the goal display
-        updateGoalDisplay();
+            function displayResults() {
+                if (!analysisResults) return;
+                
+                // Update location rows
+                const locationRows = document.getElementById('locationRows');
+                locationRows.innerHTML = '';
+                
+                // Find max count for scaling bars
+                const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount || 0));
+                
+                // Debug output
+                console.log("Analysis results:", analysisResults);
+                
+                analysisResults.locations.forEach(location => {
+                    const row = document.createElement('div');
+                    row.className = 'location-row';
+                    
+                    // Calculate width percentage (max 85%)
+                    const widthPercentage = Math.min(85, maxCount > 0 ? (location.underGoalCount / maxCount) * 85 : 0);
+                    
+                    // Display count of employees under goal
+                    row.innerHTML = `
+                        <div class="location-label">${location.location}</div>
+                        <div class="bar-container">
+                            <div class="bar" style="width: ${widthPercentage}%">${location.underGoalCount}</div>
+                        </div>
+                        <div class="percentage">${location.percentage}%</div>
+                        <div class="metrics">
+                            <div class="fte">${location.fte} FTE</div>
+                            <div class="cost">$${location.monthlyCost.toLocaleString()}</div>
+                        </div>
+                    `;
+                    
+                    locationRows.appendChild(row);
+                });
+                
+                // Update insights
+                const insightsList = document.getElementById('insightsList');
+                insightsList.innerHTML = '';
+                
+                // Generate insights
+                let insights = [];
+                
+                // Sort locations by productivity (highest delta first)
+                const productivitySorted = _.sortBy(analysisResults.locations, loc => -loc.fte);
+                
+                // Add insights based on the data
+                if (productivitySorted.length > 0) {
+                    const leastProductive = productivitySorted[0].location;
+                    const mostProductive = productivitySorted[productivitySorted.length - 1].location;
+                    
+                    insights = [
+                        `Employees working in <strong>${leastProductive}</strong> mode show the lowest average productivity`,
+                        `<strong>${mostProductive}</strong> workers demonstrate the highest productivity levels`,
+                        `The largest workforce investment is in the <strong>${leastProductive}</strong> category (${productivitySorted[0].fte} FTE, $${productivitySorted[0].monthlyCost.toLocaleString()})`,
+                        `${analysisResults.totalFTE} total FTE across all work modes`,
+                        `Current monthly cost across all locations: $${analysisResults.totalMonthlyCost.toLocaleString()}`
+                    ];
+                    
+                    // Add remote vs office comparison if both exist
+                    const hasOffice = analysisResults.locations.some(loc => 
+                        loc.location.toLowerCase().includes('office'));
+                    const hasRemote = analysisResults.locations.some(loc => 
+                        loc.location.toLowerCase().includes('remote'));
+                    
+                    if (hasOffice && hasRemote) {
+                        insights.push('Employees with some remote ability seem more productive overall compared to office-only staff');
+                    }
+                }
+                
+                // Add insights to the list
+                insights.forEach(insight => {
+                    const li = document.createElement('li');
+                    li.innerHTML = insight;
+                    insightsList.appendChild(li);
+                });
+                
+                // Update sample data
+                const sampleTableBody = document.getElementById('sampleTableBody');
+                sampleTableBody.innerHTML = '';
+                
+                analysisResults.employeeData.forEach((employee, index) => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${employee.employeeId}</td>
+                        <td>${employee.location}</td>
+                        <td class="text-right">${employee.productiveHours.toFixed(2)}</td>
+                        <td class="text-right">${employee.meetingHours.toFixed(2)}</td>
+                        <td class="text-right">${employee.combinedHours.toFixed(2)}</td>
+                        <td class="text-right">${productivityGoalInput.value}</td>
+                        <td class="text-right">${employee.delta.toFixed(2)}</td>
+                    `;
+                    
+                    sampleTableBody.appendChild(row);
+                });
+                
+                // Show results
+                resultsContainer.classList.remove('hidden');
+                loadingContainer.classList.add('hidden');
+            }
+            
+            // Initialize the goal display
+            updateGoalDisplay();
+            
+            function useSampleData() {
+                loadingContainer.classList.remove('hidden');
+                errorContainer.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                
+                setTimeout(function() {
+                
+                // Clear file input
+                csvFileInput.value = '';
+                
+                // Create sample data - ensured to have correct JSON syntax
+                const sampleData = [
+                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.5 },
+                    { "Location": "Office Only", "ProductiveHours": 4.2, "MeetingHours": 0.5 },
+                    { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.5 },
+                    { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.8, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.1, "MeetingHours": 0.4 },
+                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                    
+                    { "Location": "Hybrid", "ProductiveHours": 5.8, "MeetingHours": 0.7 },
+                    { "Location": "Hybrid", "ProductiveHours": 6.0, "MeetingHours": 0.8 },
+                    { "Location": "Hybrid", "ProductiveHours": 5.5, "MeetingHours": 0.7 },
+                    { "Location": "Hybrid", "ProductiveHours": 5.9, "MeetingHours": 0.8 },
+                    { "Location": "Hybrid", "ProductiveHours": 5.7, "MeetingHours": 0.7 },
+                    { "Location": "Hybrid", "ProductiveHours": 6.1, "MeetingHours": 0.8 },
+                    { "Location": "Hybrid", "ProductiveHours": 5.6, "MeetingHours": 0.7 },
+                    
+                    { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.4, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.6 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 }.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 5.8, "MeetingHours": 0.6 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.1, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 5.9, "MeetingHours": 0.6 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.5, "MeetingHours": 0.7 },
+                    { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0
