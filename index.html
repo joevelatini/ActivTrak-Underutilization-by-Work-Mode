@@ -10,87 +10,161 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             color: #333;
+            background-color: #f8f9fa;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #0070cd;
-            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
         }
         .logo {
             display: flex;
             align-items: center;
         }
+        .logo img {
+            width: 60px;
+            height: auto;
+            margin-right: 15px;
+        }
         .logo-icon {
-            margin-right: 12px;
             width: 60px;
             height: 60px;
+            margin-right: 15px;
         }
-        h1, h2, h3 {
+        .title {
+            font-size: 28px;
+            font-weight: bold;
             color: #333;
-            margin-top: 0;
         }
-        .settings {
-            background-color: #f9f9f9;
-            padding: 15px;
+        .map-icon {
+            color: #2563EB;
+            font-size: 32px;
+        }
+        .divider {
+            height: 2px;
+            background-color: #2563EB;
+            margin: 0 20px;
+        }
+        .panel {
+            background-color: white;
             border-radius: 8px;
+            margin: 20px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .panel-title {
+            font-size: 24px;
+            font-weight: bold;
             margin-bottom: 20px;
+            color: #333;
         }
-        .file-upload {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
+        .form-row {
+            display: flex;
+            gap: 20px;
             margin-bottom: 20px;
         }
         .form-group {
+            flex: 1;
             margin-bottom: 15px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
+            font-size: 16px;
         }
         input, select {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
-        button {
-            background-color: #0070cd;
-            color: white;
-            border: none;
+        .file-input {
+            display: flex;
+            gap: 10px;
+        }
+        .file-input-label {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
             padding: 10px 15px;
             border-radius: 4px;
             cursor: pointer;
+            display: inline-block;
             font-weight: 600;
+            color: #333;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        button:hover {
-            background-color: #00529b;
+        .file-input-label:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
         }
-        button:disabled {
+        .file-name {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #666;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background-color: #2563EB;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1E40AF;
+        }
+        .btn-sample {
+            background-color: #2563EB;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 25px;
+            min-height: 70px;
+        }
+        .btn-sample:hover {
+            background-color: #1E40AF;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-disabled {
             background-color: #cccccc;
             cursor: not-allowed;
-        }
-        .demo-button {
-            background-color: #00529b;
-            margin-left: 10px;
-        }
-        .reset-button:hover {
-            background-color: #5a6268;
         }
         .metrics-container {
             margin: 30px 0;
@@ -114,7 +188,7 @@
         }
         .bar {
             height: 34px;
-            background-color: #0070cd;
+            background-color: #2563EB;
             display: flex;
             align-items: center;
             color: white;
@@ -152,16 +226,12 @@
             margin-bottom: 10px;
             line-height: 1.5;
         }
-        .map-icon {
-            margin-left: 12px;
-            width: 40px;
-            height: 40px;
-        }
         .footer {
             text-align: center;
             font-size: 12px;
             color: #777;
             margin-top: 30px;
+            padding: 20px;
         }
         .error {
             background-color: #ffebee;
@@ -177,10 +247,6 @@
             height: 100px;
             font-weight: 600;
         }
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
         .hidden {
             display: none;
         }
@@ -190,12 +256,12 @@
             margin-bottom: 20px;
         }
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
         th {
-            background-color: #0070cd;
+            background-color: #2563EB;
             color: white;
         }
         tr:nth-child(even) {
@@ -212,30 +278,31 @@
             <div class="logo">
                 <div class="logo-icon">
                     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <!-- ActivTrak logo styled triangles -->
-                        <polygon points="100,20 30,130 170,130" fill="#0070CD" />
+                        <polygon points="100,20 30,130 170,130" fill="#2563EB" />
                         <polygon points="80,60 40,130 120,130" fill="#00B2A9" />
                         <polygon points="80,90 60,130 100,130" fill="#2D3E50" />
                     </svg>
                 </div>
-                <h1>ActivTrak Underutilization by Work Mode</h1>
-                <div class="map-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" fill="#0070CD"/>
-                    </svg>
-                </div>
+                <div class="title">ActivTrak Underutilization by Work Mode</div>
+            </div>
+            <div class="map-icon">
+                <svg viewBox="0 0 24 24" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" fill="#2563EB"/>
+                </svg>
             </div>
         </div>
 
+        <div class="divider"></div>
+
         <!-- Settings Panel -->
-        <div class="settings">
-            <h2>Analysis Settings</h2>
-            <div style="display: flex; gap: 20px;">
-                <div class="form-group" style="flex: 1;">
+        <div class="panel">
+            <div class="panel-title">Analysis Settings</div>
+            <div class="form-row">
+                <div class="form-group">
                     <label for="productivityGoal">Productivity Goal (hours/day)</label>
                     <input type="number" id="productivityGoal" min="1" max="24" step="0.1" value="7.5">
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group">
                     <label for="annualSalary">Annual Salary for Cost Calculation ($)</label>
                     <input type="number" id="annualSalary" min="10000" step="1000" value="60000">
                 </div>
@@ -243,45 +310,57 @@
         </div>
 
         <!-- File Upload -->
-        <div class="file-upload">
-            <h2>Upload and Configure Data</h2>
+        <div class="panel">
+            <div class="panel-title">Upload and Configure Data</div>
             <div class="form-group">
                 <label for="csvFile">Upload CSV File</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="file" id="csvFile" accept=".csv">
-                    <button id="demoButton" class="demo-button">Use Sample Data</button>
+                <div class="file-input">
+                    <label class="file-input-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px; vertical-align: -2px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
+                        Choose File
+                        <input type="file" id="csvFile" accept=".csv" style="display:none">
+                    </label>
+                    <div id="fileName" class="file-name">No file chosen</div>
+                    <button id="demoButton" class="btn-sample">
+                        Use Sample<br>Data
+                    </button>
                 </div>
             </div>
             
-            <div id="columnSelectors" class="hidden">
-                <div style="display: flex; gap: 20px;">
-                    <div class="form-group" style="flex: 1;">
+            <div id="columnSelectors">
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="locationColumn">Location/Work Mode Column</label>
                         <select id="locationColumn">
                             <option value="">-- Select Column --</option>
                         </select>
                     </div>
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group">
                         <label for="productiveHoursColumn">Productive Hours Column</label>
                         <select id="productiveHoursColumn">
                             <option value="">-- Select Column --</option>
                         </select>
                     </div>
                 </div>
-                <div style="display: flex; gap: 20px;">
-                    <div class="form-group" style="flex: 1;">
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="meetingHoursColumn">Offline Meeting Hours Column</label>
                         <select id="meetingHoursColumn">
                             <option value="">-- Select Column --</option>
                         </select>
                     </div>
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group">
                         <!-- Empty space for alignment -->
                     </div>
                 </div>
-                <div class="button-group">
-                    <button id="analyzeButton" disabled>Analyze Data</button>
-                    <button id="resetButton" class="reset-button" style="background-color: #6c757d;">Reset</button>
+                <div class="button-row">
+                    <button id="analyzeButton" class="btn-primary btn-disabled" disabled>Analyze Data</button>
+                    <button id="resetButton" class="btn-secondary">Reset</button>
                 </div>
             </div>
         </div>
@@ -295,8 +374,8 @@
         </div>
 
         <!-- Results container -->
-        <div id="resultsContainer" class="hidden">
-            <h2>Underutilization by Work Mode (Productivity Goal: <span id="goalDisplay">7.5</span> hrs)</h2>
+        <div id="resultsContainer" class="panel hidden">
+            <div class="panel-title">Underutilization by Work Mode (Productivity Goal: <span id="goalDisplay">7.5</span> hrs)</div>
             
             <div class="metrics-container">
                 <h3>Location Summary - Employees Below Goal</h3>
@@ -355,6 +434,7 @@
             const productivityGoalInput = document.getElementById('productivityGoal');
             const annualSalaryInput = document.getElementById('annualSalary');
             const csvFileInput = document.getElementById('csvFile');
+            const fileNameDisplay = document.getElementById('fileName');
             const demoButton = document.getElementById('demoButton');
             const columnSelectors = document.getElementById('columnSelectors');
             const locationColumnSelect = document.getElementById('locationColumn');
@@ -376,6 +456,16 @@
             analyzeButton.addEventListener('click', analyzeData);
             resetButton.addEventListener('click', resetApplication);
             productivityGoalInput.addEventListener('change', updateGoalDisplay);
+            
+            // Update file name display when a file is selected
+            csvFileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    fileNameDisplay.textContent = file.name;
+                } else {
+                    fileNameDisplay.textContent = 'No file chosen';
+                }
+            });
             
             // Update goal display when input changes
             function updateGoalDisplay() {
@@ -402,7 +492,6 @@
                             data = results.data;
                             headers = results.meta.fields;
                             populateColumnSelectors();
-                            columnSelectors.classList.remove('hidden');
                         } else {
                             showError("No data found in the CSV file.");
                         }
@@ -452,7 +541,13 @@
                 selectedColumns.productiveHours = productiveHoursColumnSelect.value;
                 selectedColumns.meetingHours = meetingHoursColumnSelect.value;
                 
-                analyzeButton.disabled = !selectedColumns.location || !selectedColumns.productiveHours;
+                if (!selectedColumns.location || !selectedColumns.productiveHours) {
+                    analyzeButton.disabled = true;
+                    analyzeButton.classList.add('btn-disabled');
+                } else {
+                    analyzeButton.disabled = false;
+                    analyzeButton.classList.remove('btn-disabled');
+                }
             }
             
             function showError(message) {
@@ -469,10 +564,6 @@
                 const annualSalary = parseFloat(annualSalaryInput.value);
                 
                 try {
-                    // Debug output to verify data structure
-                    console.log("Analyzing data:", data);
-                    console.log("Selected columns:", selectedColumns);
-                    
                     // Process the data
                     const employeeData = data.map((row, index) => {
                         // Get the location value, using bracket notation for proper field access
@@ -569,9 +660,6 @@
                 // Find max count for scaling bars
                 const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount || 0));
                 
-                // Debug output
-                console.log("Analysis results:", analysisResults);
-                
                 analysisResults.locations.forEach(location => {
                     const row = document.createElement('div');
                     row.className = 'location-row';
@@ -661,58 +749,57 @@
                 loadingContainer.classList.add('hidden');
             }
             
-            // Initialize the goal display
-            updateGoalDisplay();
-            
             function useSampleData() {
                 loadingContainer.classList.remove('hidden');
                 errorContainer.classList.add('hidden');
                 resultsContainer.classList.add('hidden');
                 
-                setTimeout(function() {
+                // Update file name display
+                fileNameDisplay.textContent = 'user_details';
                 
                 // Clear file input
                 csvFileInput.value = '';
                 
-                // Create sample data - ensured to have correct JSON syntax
-                const sampleData = [
-                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.5 },
-                    { "Location": "Office Only", "ProductiveHours": 4.2, "MeetingHours": 0.5 },
-                    { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.5 },
-                    { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.8, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.1, "MeetingHours": 0.4 },
-                    { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                    
-                    { "Location": "Hybrid", "ProductiveHours": 5.8, "MeetingHours": 0.7 },
-                    { "Location": "Hybrid", "ProductiveHours": 6.0, "MeetingHours": 0.8 },
-                    { "Location": "Hybrid", "ProductiveHours": 5.5, "MeetingHours": 0.7 },
-                    { "Location": "Hybrid", "ProductiveHours": 5.9, "MeetingHours": 0.8 },
-                    { "Location": "Hybrid", "ProductiveHours": 5.7, "MeetingHours": 0.7 },
-                    { "Location": "Hybrid", "ProductiveHours": 6.1, "MeetingHours": 0.8 },
-                    { "Location": "Hybrid", "ProductiveHours": 5.6, "MeetingHours": 0.7 },
-                    
-                    { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.4, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.6 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 }.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 5.8, "MeetingHours": 0.6 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.1, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 5.9, "MeetingHours": 0.6 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.5, "MeetingHours": 0.7 },
-                    { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0
+                setTimeout(function() {
+                    // Create sample data - ensured to have correct JSON syntax
+                    const sampleData = [
+                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.5 },
+                        { "Location": "Office Only", "ProductiveHours": 4.2, "MeetingHours": 0.5 },
+                        { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.5 },
+                        { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.8, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.1, "MeetingHours": 0.4 },
+                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
+                        
+                        { "Location": "Hybrid", "ProductiveHours": 5.8, "MeetingHours": 0.7 },
+                        { "Location": "Hybrid", "ProductiveHours": 6.0, "MeetingHours": 0.8 },
+                        { "Location": "Hybrid", "ProductiveHours": 5.5, "MeetingHours": 0.7 },
+                        { "Location": "Hybrid", "ProductiveHours": 5.9, "MeetingHours": 0.8 },
+                        { "Location": "Hybrid", "ProductiveHours": 5.7, "MeetingHours": 0.7 },
+                        { "Location": "Hybrid", "ProductiveHours": 6.1, "MeetingHours": 0.8 },
+                        { "Location": "Hybrid", "ProductiveHours": 5.6, "MeetingHours": 0.7 },
+                        
+                        { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.4, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 5.8, "MeetingHours": 0.6 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.1, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 5.9, "MeetingHours": 0.6 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.5, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.6 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
+                        { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 }
