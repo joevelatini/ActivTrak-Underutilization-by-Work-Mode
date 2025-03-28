@@ -451,7 +451,7 @@
             selectedColumns.productiveHours = productiveHoursColumnSelect.value;
             selectedColumns.meetingHours = meetingHoursColumnSelect.value;
             
-            analyzeButton.disabled = !selectedColumns.location || !selectedColumns.productiveHours || !selectedColumns.meetingHours;
+            analyzeButton.disabled = !selectedColumns.location || !selectedColumns.productiveHours;
         }
         
         function showError(message) {
@@ -561,7 +561,7 @@
             locationRows.innerHTML = '';
             
             // Find max count for scaling bars
-            const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount));
+            const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount || 0));
             
             analysisResults.locations.forEach(location => {
                 const row = document.createElement('div');
@@ -662,7 +662,29 @@
             
             // Create sample data
             const sampleData = [
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.5 },
+                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.5 },
+                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.5 },
+                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
                 { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.1, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
+                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
                 { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
                 
                 { Location: 'Hybrid', ProductiveHours: 5.8, MeetingHours: 0.7 },
@@ -677,6 +699,12 @@
                 { Location: 'Remote Only', ProductiveHours: 6.4, MeetingHours: 0.7 },
                 { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.7 },
                 { Location: 'Remote Only', ProductiveHours: 5.8, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.1, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 5.9, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.5, MeetingHours: 0.7 },
+                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.6 },
+                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
                 { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
             ];
             
@@ -745,70 +773,3 @@
         
         // Initialize the goal display
         updateGoalDisplay();
-    </script>
-</body>
-</html>,
-                { Location: 'Remote Only', ProductiveHours: 6.1, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 5.9, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.5, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.0, MeetingHours: 0.6 },
-                { Location: 'Remote Only', ProductiveHours: 6.2, MeetingHours: 0.7 },
-                { Location: 'Remote Only', ProductiveHours: 6.3, MeetingHours: 0.7 }
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },iveHours: 4.7, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.5 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.0, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.2, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.6, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.7, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 5.1, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.5, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.8, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.3, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.9, MeetingHours: 0.4 },
-                { Location: 'Office Only', ProductiveHours: 4.4, MeetingHours: 0.4 },
-                { Location: 'Office Only', Product
