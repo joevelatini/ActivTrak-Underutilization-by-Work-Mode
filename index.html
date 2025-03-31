@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ActivTrak Productivity Tracker</title>
+  <title>ActivTrak Underutilization by Work Mode</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,6 +25,12 @@
       font-size: 24px;
       font-weight: bold;
       color: #0066cc;
+      display: flex;
+      align-items: center;
+    }
+    .logo-icon {
+      margin-right: 10px;
+      font-size: 28px;
     }
     .file-upload {
       border: 2px dashed #ccc;
@@ -38,7 +44,7 @@
       border-color: #0066cc;
       background-color: #e9f2fd;
     }
-    .upload-btn {
+    .btn {
       background-color: #0066cc;
       color: white;
       border: none;
@@ -46,9 +52,19 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
+      margin: 5px;
     }
-    .upload-btn:hover {
+    .btn:hover {
       background-color: #0052a3;
+    }
+    .run-btn {
+      background-color: #0066cc;
+      font-size: 16px;
+      padding: 12px 20px;
+      margin-top: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     .card {
       border: 1px solid #ddd;
@@ -171,12 +187,26 @@
       border: 1px solid #ddd;
       border-radius: 4px;
     }
+    .status-message {
+      padding: 10px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 4px;
+      margin: 10px 0;
+      display: none;
+    }
   </style>
+  <!-- Font Awesome for the map icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">ActivTrak Productivity Tracker</div>
+      <div class="logo">
+        <span class="logo-icon"><i class="fas fa-map-location-dot"></i></span>
+        ActivTrak Underutilization by Work Mode
+      </div>
       <div>
         <button id="exportPdf" class="export-btn">Export PDF</button>
         <button id="exportCsv" class="export-btn">Export CSV</button>
@@ -185,7 +215,7 @@
     
     <div class="instructions">
       <h3>Instructions</h3>
-      <p>Upload your ActivTrak user details CSV file to generate productivity loss metrics. 
+      <p>Upload your ActivTrak user details CSV file to generate work mode underutilization metrics. 
         The file should include columns for User, Location Summary, Productive Hrs/Day, 
         and Offline Meeting Hrs/Day.</p>
     </div>
@@ -211,9 +241,13 @@
     <div class="file-upload" id="dropArea">
       <p>Drag & drop your CSV file here or</p>
       <input type="file" id="fileInput" accept=".csv" style="display: none;">
-      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+      <button class="btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
       <p id="fileName"></p>
+      <div id="status-message" class="status-message"></div>
     </div>
+    
+    <!-- Run Analysis Button -->
+    <button id="runAnalysisBtn" class="btn run-btn" style="display: none;">Run Analysis</button>
     
     <div id="loading" class="loading hidden">
       <div class="spinner"></div>
@@ -290,13 +324,16 @@
     const hoursPerDayInput = document.getElementById('hoursPerDay');
     const daysPerMonthInput = document.getElementById('daysPerMonth');
     const hourlyRateInput = document.getElementById('hourlyRate');
+    const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+    const statusMessage = document.getElementById('status-message');
     
     // Settings
     let hoursPerDay = 8;
     let daysPerMonth = 22;
     let hourlyRate = 30;
     
-    // Track processed data
+    // Track processed data and file
+    let currentFile = null;
     let tableData = [];
     
     // Event Listeners for drag and drop
@@ -347,41 +384,78 @@
     // Settings change listeners
     hoursPerDayInput.addEventListener('change', function() {
       hoursPerDay = parseFloat(this.value) || 8;
-      if (tableData.length) {
-        processData(tableData);
-      }
     });
     
     daysPerMonthInput.addEventListener('change', function() {
       daysPerMonth = parseInt(this.value) || 22;
-      if (tableData.length) {
-        processData(tableData);
-      }
     });
     
     hourlyRateInput.addEventListener('change', function() {
       hourlyRate = parseFloat(this.value) || 30;
-      if (tableData.length) {
-        processData(tableData);
-      }
     });
     
     // Process the CSV file
     function handleFiles(files) {
-      const file = files[0];
-      fileName.textContent = file.name;
+      currentFile = files[0];
+      fileName.textContent = currentFile.name;
+      
+      // Show run analysis button
+      runAnalysisBtn.style.display = 'block';
+      
+      // Hide any previous results
+      results.classList.add('hidden');
+      
+      // Clear status message
+      statusMessage.style.display = 'none';
+      statusMessage.textContent = '';
+    }
+    
+    // Run Analysis button click handler
+    runAnalysisBtn.addEventListener('click', function() {
+      if (!currentFile) {
+        showStatusMessage('Please upload a CSV file first.');
+        return;
+      }
       
       // Show loading
       loading.classList.remove('hidden');
       results.classList.add('hidden');
       
-      Papa.parse(file, {
+      Papa.parse(currentFile, {
         header: true,
         dynamicTyping: true,
         complete: function(results) {
+          console.log("CSV Parsing complete:", results);
+          
+          // Check if we have data
+          if (!results.data || results.data.length === 0) {
+            showStatusMessage('The CSV file appears to be empty.');
+            loading.classList.add('hidden');
+            return;
+          }
+          
+          // Check for required columns
+          const firstRow = results.data[0];
+          const requiredColumns = ["User", "Location Summary", "Productive Hrs/Day", "Offline Meeting Hrs/Day"];
+          const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+          
+          if (missingColumns.length > 0) {
+            showStatusMessage(`Missing required columns: ${missingColumns.join(', ')}. 
+              Please make sure your CSV has the correct column headers.`);
+            console.log("First row data:", firstRow);
+            loading.classList.add('hidden');
+            return;
+          }
+          
           // Process the data
           tableData = results.data;
-          processData(results.data);
+          const processedData = processData(results.data);
+          
+          if (processedData.length === 0) {
+            showStatusMessage('No valid data found after processing. Please check the CSV format.');
+            loading.classList.add('hidden');
+            return;
+          }
           
           // Hide loading
           loading.classList.add('hidden');
@@ -389,14 +463,23 @@
         },
         error: function(error) {
           console.error('Error parsing CSV:', error);
-          alert('Error parsing CSV file. Please check the file format.');
+          showStatusMessage('Error parsing CSV file. Please check the file format.');
           loading.classList.add('hidden');
         }
       });
+    });
+    
+    function showStatusMessage(message) {
+      statusMessage.textContent = message;
+      statusMessage.style.display = 'block';
     }
     
     // Process the CSV data
     function processData(data) {
+      console.log("Processing data...");
+      console.log("Data length:", data.length);
+      console.log("Sample row:", data[0]);
+      
       // Clear previous results
       productivityTableBody.innerHTML = '';
       underutilizationTableBody.innerHTML = '';
@@ -404,6 +487,12 @@
       
       // Filter out rows with missing location data
       const validData = data.filter(row => row['Location Summary']);
+      console.log("Valid data after filtering:", validData.length);
+      
+      if (validData.length === 0) {
+        showStatusMessage('No valid location data found in the CSV.');
+        return [];
+      }
       
       // Calculate location statistics
       const locationStats = {};
@@ -435,6 +524,8 @@
         const combinedHrsPerDay = (row['Productive Hrs/Day'] || 0) + (row['Offline Meeting Hrs/Day'] || 0);
         locationStats[location].totalCombinedHrs += combinedHrsPerDay;
       });
+      
+      console.log("Location statistics:", locationStats);
       
       // Calculate the percentage of total users for each location
       const totalUsers = validData.length;
@@ -479,6 +570,8 @@
       };
       
       resultData.push(totalStats);
+      
+      console.log("Final result data:", resultData);
       
       // Populate the Productivity Loss Table
       resultData.forEach(row => {
@@ -534,35 +627,37 @@
       });
       
       // Create bar chart for visualization
-      const maxUsers = Math.max(...locations.map(loc => loc.users));
-      
-      locations.forEach(location => {
-        const barHeight = (location.users / maxUsers) * 100;
+      if (locations.length > 0) {
+        const maxUsers = Math.max(...locations.map(loc => loc.users));
         
-        const barContainer = document.createElement('div');
-        barContainer.style.display = 'flex';
-        barContainer.style.flexDirection = 'column';
-        barContainer.style.alignItems = 'center';
-        barContainer.style.flex = '1';
-        
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.height = `${barHeight}%`;
-        bar.style.width = '60px';
-        
-        const barValue = document.createElement('div');
-        barValue.className = 'bar-value';
-        barValue.textContent = location.users;
-        bar.appendChild(barValue);
-        
-        const barLabel = document.createElement('div');
-        barLabel.className = 'bar-label';
-        barLabel.textContent = location.location;
-        
-        barContainer.appendChild(bar);
-        barContainer.appendChild(barLabel);
-        barChart.appendChild(barContainer);
-      });
+        locations.forEach(location => {
+          const barHeight = (location.users / maxUsers) * 100;
+          
+          const barContainer = document.createElement('div');
+          barContainer.style.display = 'flex';
+          barContainer.style.flexDirection = 'column';
+          barContainer.style.alignItems = 'center';
+          barContainer.style.flex = '1';
+          
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.height = `${barHeight}%`;
+          bar.style.width = '60px';
+          
+          const barValue = document.createElement('div');
+          barValue.className = 'bar-value';
+          barValue.textContent = location.users;
+          bar.appendChild(barValue);
+          
+          const barLabel = document.createElement('div');
+          barLabel.className = 'bar-label';
+          barLabel.textContent = location.location;
+          
+          barContainer.appendChild(bar);
+          barContainer.appendChild(barLabel);
+          barChart.appendChild(barContainer);
+        });
+      }
       
       return resultData;
     }
@@ -579,7 +674,7 @@
       
       // Add title
       doc.setFontSize(18);
-      doc.text('ActivTrak Productivity Loss Report', 14, 20);
+      doc.text('ActivTrak Underutilization by Work Mode', 14, 20);
       
       // Add date
       doc.setFontSize(12);
@@ -613,7 +708,7 @@
       });
       
       // Save the PDF
-      doc.save('activtrak-productivity-report.pdf');
+      doc.save('activtrak-underutilization-report.pdf');
     });
     
     // Export as CSV
@@ -640,7 +735,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'activtrak-productivity-report.csv');
+      link.setAttribute('download', 'activtrak-underutilization-report.csv');
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
