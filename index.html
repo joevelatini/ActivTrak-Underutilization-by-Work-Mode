@@ -16,13 +16,15 @@
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
     th { background-color: #f2f2f2; font-weight: bold; }
+    tr:last-child td { font-weight: bold; border-top: 2px solid #333; }
     .btn { background-color: #0066cc; color: white; border: none; padding: 10px 15px; 
            border-radius: 4px; cursor: pointer; font-size: 14px; margin: 5px; }
     .file-section { margin-bottom: 20px; }
     #status { color: red; margin: 10px 0; }
     .hidden { display: none; }
     .setting { margin-bottom: 10px; }
-    label { display: inline-block; width: 150px; }
+    label { display: inline-block; width: 200px; }
+    .info-text { font-size: 14px; color: #666; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -38,16 +40,14 @@
       <div class="card-header">Settings & Upload</div>
       <div class="card-body">
         <div class="setting">
-          <label for="hoursPerDay">Hours per workday:</label>
-          <input type="number" id="hoursPerDay" value="8" min="1" max="24">
+          <label for="productivityGoal">Productivity Goal (hours/day):</label>
+          <input type="number" id="productivityGoal" value="8" min="1" max="24" step="0.1">
+          <div class="info-text">Only users below this goal will be counted as underutilized</div>
         </div>
         <div class="setting">
-          <label for="daysPerMonth">Working days per month:</label>
-          <input type="number" id="daysPerMonth" value="22" min="1" max="31">
-        </div>
-        <div class="setting">
-          <label for="hourlyRate">Hourly rate ($):</label>
-          <input type="number" id="hourlyRate" value="30" min="1">
+          <label for="annualSalary">Annual Salary ($):</label>
+          <input type="number" id="annualSalary" value="60000" min="1">
+          <div class="info-text">Used for calculating monthly dollar impact</div>
         </div>
         
         <div class="file-section">
@@ -68,7 +68,7 @@
             <thead>
               <tr>
                 <th>Location</th>
-                <th>Users</th>
+                <th>Users Below Goal</th>
                 <th>% of Total Users</th>
                 <th>Untapped Capacity (FTE)</th>
                 <th>Productivity Loss Cost (Monthly)</th>
@@ -86,7 +86,7 @@
             <thead>
               <tr>
                 <th>Location</th>
-                <th>Employee Count</th>
+                <th>Employee Count Below Goal</th>
                 <th>% of Workforce</th>
                 <th>Untapped Capacity (FTE/Month)</th>
               </tr>
@@ -108,9 +108,8 @@
     const underutilizationTableBody = document.getElementById('underutilization-table-body');
     
     // Settings
-    const hoursPerDayInput = document.getElementById('hoursPerDay');
-    const daysPerMonthInput = document.getElementById('daysPerMonth');
-    const hourlyRateInput = document.getElementById('hourlyRate');
+    const productivityGoalInput = document.getElementById('productivityGoal');
+    const annualSalaryInput = document.getElementById('annualSalary');
     
     // Run Analysis Button Click Handler
     runAnalysisBtn.addEventListener('click', function() {
@@ -162,9 +161,9 @@
       }
       
       // Settings
-      const hoursPerDay = parseFloat(hoursPerDayInput.value) || 8;
-      const daysPerMonth = parseInt(daysPerMonthInput.value) || 22;
-      const hourlyRate = parseFloat(hourlyRateInput.value) || 30;
+      const productivityGoal = parseFloat(productivityGoalInput.value) || 8;
+      const annualSalary = parseFloat(annualSalaryInput.value) || 60000;
+      const monthlySalary = annualSalary / 12;
       
       // Process data
       const locationStats = {};
@@ -178,29 +177,30 @@
         
         if (!location) continue; // Skip if no location
         
+        // Count all users for total population
+        totalUsers += 1;
+        
+        // Initialize location if needed
         if (!locationStats[location]) {
           locationStats[location] = {
-            users: 0,
-            totalProductiveHrs: 0,
-            totalOfflineMeetingHrs: 0,
-            totalCombinedHrs: 0
+            totalUsers: 0,
+            usersBelowGoal: 0,
+            sumProductivityDeficit: 0 // Total hours below goal for all users in this location
           };
         }
         
-        locationStats[location].users += 1;
-        totalUsers += 1;
+        locationStats[location].totalUsers += 1;
         
-        // Add productive hours
+        // Calculate combined hours (productive + meetings)
         const productiveHrs = parseFloat(cells[productiveHrsIndex]) || 0;
-        locationStats[location].totalProductiveHrs += productiveHrs;
-        
-        // Add meeting hours
         const meetingHrs = parseFloat(cells[meetingHrsIndex]) || 0;
-        locationStats[location].totalOfflineMeetingHrs += meetingHrs;
-        
-        // Calculate combined hours
         const combinedHrs = productiveHrs + meetingHrs;
-        locationStats[location].totalCombinedHrs += combinedHrs;
+        
+        // Check if user is below productivity goal
+        if (combinedHrs < productivityGoal) {
+          locationStats[location].usersBelowGoal += 1;
+          locationStats[location].sumProductivityDeficit += (productivityGoal - combinedHrs);
+        }
       }
       
       // If no valid data was found
@@ -209,28 +209,27 @@
         return;
       }
       
-      // Calculate percentages, untapped capacity, and costs
+      // Calculate FTE and costs
+      let totalUsersBelowGoal = 0;
+      let totalFTE = 0;
+      
       Object.keys(locationStats).forEach(location => {
         const stats = locationStats[location];
-        stats.percentOfTotalUsers = ((stats.users / totalUsers) * 100).toFixed(0) + '%';
+        totalUsersBelowGoal += stats.usersBelowGoal;
         
-        const avgHrsPerDay = stats.totalCombinedHrs / stats.users;
-        const untappedHrsPerDay = Math.max(0, hoursPerDay - avgHrsPerDay);
-        stats.untappedCapacityFTE = (untappedHrsPerDay * stats.users / hoursPerDay).toFixed(2);
-        stats.productivityLossCost = '$' + (untappedHrsPerDay * stats.users * hourlyRate * daysPerMonth).toFixed(0);
-      });
-      
-      // Calculate total untapped capacity and cost
-      let totalUntappedCapacityFTE = 0;
-      let totalProductivityLossCost = 0;
-      
-      Object.values(locationStats).forEach(stats => {
-        totalUntappedCapacityFTE += parseFloat(stats.untappedCapacityFTE);
-        totalProductivityLossCost += parseFloat(stats.productivityLossCost.replace('$', ''));
+        // Calculate percentage of total population for this location
+        stats.percentOfTotal = ((stats.usersBelowGoal / totalUsers) * 100).toFixed(1) + '%';
+        
+        // Calculate FTE - Sum of productivity deficit divided by standard workday
+        stats.fte = (stats.sumProductivityDeficit / productivityGoal).toFixed(2);
+        totalFTE += parseFloat(stats.fte);
+        
+        // Calculate monthly cost - FTE * (annual salary / 12)
+        stats.monthlyCost = '$' + ((parseFloat(stats.fte) * monthlySalary)).toLocaleString(undefined, {maximumFractionDigits: 0});
       });
       
       // Display results
-      displayProductivityTable(locationStats, totalUsers, totalUntappedCapacityFTE, totalProductivityLossCost);
+      displayProductivityTable(locationStats, totalUsersBelowGoal, totalFTE, monthlySalary);
       displayUnderutilizationTable(locationStats);
       
       // Show results section
@@ -238,31 +237,34 @@
     }
     
     // Display Productivity Loss Table
-    function displayProductivityTable(locationStats, totalUsers, totalUntappedCapacityFTE, totalProductivityLossCost) {
+    function displayProductivityTable(locationStats, totalUsersBelowGoal, totalFTE, monthlySalary) {
       // Add rows for each location
       Object.keys(locationStats).forEach(location => {
         const stats = locationStats[location];
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${location}</td>
-          <td>${stats.users}</td>
-          <td>${stats.percentOfTotalUsers}</td>
-          <td>${stats.untappedCapacityFTE}</td>
-          <td>${stats.productivityLossCost}</td>
-        `;
-        
-        productivityTableBody.appendChild(row);
+        if (stats.usersBelowGoal > 0) { // Only show locations with users below goal
+          const row = document.createElement('tr');
+          
+          row.innerHTML = `
+            <td>${location}</td>
+            <td>${stats.usersBelowGoal}</td>
+            <td>${stats.percentOfTotal}</td>
+            <td>${stats.fte}</td>
+            <td>${stats.monthlyCost}</td>
+          `;
+          
+          productivityTableBody.appendChild(row);
+        }
       });
       
       // Add total row
+      const totalMonthlyCost = '$' + (totalFTE * monthlySalary).toLocaleString(undefined, {maximumFractionDigits: 0});
       const totalRow = document.createElement('tr');
       totalRow.innerHTML = `
         <td>Total</td>
-        <td>${totalUsers}</td>
+        <td>${totalUsersBelowGoal}</td>
         <td>100%</td>
-        <td>${totalUntappedCapacityFTE.toFixed(2)}</td>
-        <td>$${totalProductivityLossCost.toFixed(0)}</td>
+        <td>${totalFTE.toFixed(2)}</td>
+        <td>${totalMonthlyCost}</td>
       `;
       productivityTableBody.appendChild(totalRow);
     }
@@ -272,16 +274,18 @@
       // Add rows for each location
       Object.keys(locationStats).forEach(location => {
         const stats = locationStats[location];
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${location}</td>
-          <td>${stats.users}</td>
-          <td>${stats.percentOfTotalUsers}</td>
-          <td>${stats.untappedCapacityFTE}<br>${stats.productivityLossCost}</td>
-        `;
-        
-        underutilizationTableBody.appendChild(row);
+        if (stats.usersBelowGoal > 0) { // Only show locations with users below goal
+          const row = document.createElement('tr');
+          
+          row.innerHTML = `
+            <td>${location}</td>
+            <td>${stats.usersBelowGoal}</td>
+            <td>${stats.percentOfTotal}</td>
+            <td>${stats.fte}<br>${stats.monthlyCost}</td>
+          `;
+          
+          underutilizationTableBody.appendChild(row);
+        }
       });
     }
   </script>
