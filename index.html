@@ -5,258 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ActivTrak Underutilization by Work Mode</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #0066cc;
-      display: flex;
-      align-items: center;
-    }
-    .logo-icon {
-      margin-right: 10px;
-      font-size: 28px;
-    }
-    .file-upload {
-      border: 2px dashed #ccc;
-      border-radius: 5px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      background-color: #f9f9f9;
-    }
-    .file-upload.highlight {
-      border-color: #0066cc;
-      background-color: #e9f2fd;
-    }
-    .btn {
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      margin: 5px;
-    }
-    .btn:hover {
-      background-color: #0052a3;
-    }
-    .run-btn {
-      background-color: #0066cc;
-      font-size: 16px;
-      padding: 12px 20px;
-      margin-top: 10px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    .card-header {
-      background-color: #0066cc;
-      color: white;
-      padding: 15px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .card-body {
-      padding: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
-    tr:last-child td {
-      font-weight: bold;
-      border-top: 2px solid #333;
-    }
-    .bar-chart {
-      display: flex;
-      align-items: flex-end;
-      height: 200px;
-      margin-top: 20px;
-      position: relative;
-    }
-    .bar {
-      flex: 1;
-      background-color: #0066cc;
-      margin: 0 20px;
-      position: relative;
-      text-align: center;
-    }
-    .bar-label {
-      position: absolute;
-      bottom: -30px;
-      width: 100%;
-      text-align: center;
-      font-weight: bold;
-    }
-    .bar-value {
-      position: absolute;
-      top: -25px;
-      width: 100%;
-      text-align: center;
-      color: #333;
-    }
-    .hidden {
-      display: none;
-    }
-    .instructions {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
-    .instructions h3 {
-      margin-top: 0;
-    }
-    .loading {
-      text-align: center;
-      padding: 20px;
-    }
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0066cc;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 2s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .export-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-left: 10px;
-    }
-    .export-btn:hover {
-      background-color: #218838;
-    }
-    .settings {
-      margin-bottom: 20px;
-    }
-    .settings-group {
-      margin-bottom: 15px;
-    }
-    .settings-label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .settings-input {
-      width: 100px;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .status-message {
-      padding: 10px;
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-      border-radius: 4px;
-      margin: 10px 0;
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: bold; color: #0066cc; display: flex; align-items: center; }
+    .logo-icon { margin-right: 10px; }
+    .card { border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card-header { background-color: #0066cc; color: white; padding: 15px; font-size: 18px; font-weight: bold; }
+    .card-body { padding: 15px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #f2f2f2; font-weight: bold; }
+    .btn { background-color: #0066cc; color: white; border: none; padding: 10px 15px; 
+           border-radius: 4px; cursor: pointer; font-size: 14px; margin: 5px; }
+    .file-section { margin-bottom: 20px; }
+    #status { color: red; margin: 10px 0; }
+    .hidden { display: none; }
+    .setting { margin-bottom: 10px; }
+    label { display: inline-block; width: 150px; }
   </style>
-  <!-- Font Awesome for the map icon -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="logo">
-        <span class="logo-icon"><i class="fas fa-map-location-dot"></i></span>
+        <span class="logo-icon">📍</span>
         ActivTrak Underutilization by Work Mode
       </div>
-      <div>
-        <button id="exportPdf" class="export-btn">Export PDF</button>
-        <button id="exportCsv" class="export-btn">Export CSV</button>
-      </div>
     </div>
     
-    <div class="instructions">
-      <h3>Instructions</h3>
-      <p>Upload your ActivTrak user details CSV file to generate work mode underutilization metrics. 
-        The file should include columns for User, Location Summary, Productive Hrs/Day, 
-        and Offline Meeting Hrs/Day.</p>
-    </div>
-
-    <div class="settings card">
-      <div class="card-header">Settings</div>
+    <div class="card">
+      <div class="card-header">Settings & Upload</div>
       <div class="card-body">
-        <div class="settings-group">
-          <label class="settings-label">Hours per workday:</label>
-          <input type="number" id="hoursPerDay" class="settings-input" value="8" min="1" max="24">
+        <div class="setting">
+          <label for="hoursPerDay">Hours per workday:</label>
+          <input type="number" id="hoursPerDay" value="8" min="1" max="24">
         </div>
-        <div class="settings-group">
-          <label class="settings-label">Working days per month:</label>
-          <input type="number" id="daysPerMonth" class="settings-input" value="22" min="1" max="31">
+        <div class="setting">
+          <label for="daysPerMonth">Working days per month:</label>
+          <input type="number" id="daysPerMonth" value="22" min="1" max="31">
         </div>
-        <div class="settings-group">
-          <label class="settings-label">Hourly rate ($):</label>
-          <input type="number" id="hourlyRate" class="settings-input" value="30" min="1">
+        <div class="setting">
+          <label for="hourlyRate">Hourly rate ($):</label>
+          <input type="number" id="hourlyRate" value="30" min="1">
         </div>
+        
+        <div class="file-section">
+          <p>Select your ActivTrak CSV file:</p>
+          <input type="file" id="fileInput" accept=".csv">
+          <div id="status"></div>
+        </div>
+        
+        <button id="runAnalysisBtn" class="btn">Run Analysis</button>
       </div>
     </div>
     
-    <div class="file-upload" id="dropArea">
-      <p>Drag & drop your CSV file here or</p>
-      <input type="file" id="fileInput" accept=".csv" style="display: none;">
-      <button class="btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
-      <p id="fileName"></p>
-      <div id="status-message" class="status-message"></div>
-    </div>
-    
-    <!-- Run Analysis Button -->
-    <button id="runAnalysisBtn" class="btn run-btn" style="display: none;">Run Analysis</button>
-    
-    <div id="loading" class="loading hidden">
-      <div class="spinner"></div>
-      <p>Processing data...</p>
-    </div>
-
-    <!-- Results section - initially hidden -->
     <div id="results" class="hidden">
-      <!-- Productivity Loss by Location Table -->
       <div class="card">
         <div class="card-header">Monthly Productivity Loss by Location</div>
         <div class="card-body">
@@ -270,14 +74,11 @@
                 <th>Productivity Loss Cost (Monthly)</th>
               </tr>
             </thead>
-            <tbody id="productivity-table-body">
-              <!-- This will be filled with JavaScript -->
-            </tbody>
+            <tbody id="productivity-table-body"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Underutilization by Work Mode -->
       <div class="card">
         <div class="card-header">Underutilization by Work Mode</div>
         <div class="card-body">
@@ -290,214 +91,92 @@
                 <th>Untapped Capacity (FTE/Month)</th>
               </tr>
             </thead>
-            <tbody id="underutilization-table-body">
-              <!-- This will be filled with JavaScript -->
-            </tbody>
+            <tbody id="underutilization-table-body"></tbody>
           </table>
-          
-          <div class="bar-chart" id="bar-chart">
-            <!-- This will be filled with JavaScript -->
-          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Include Papa Parse for CSV parsing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-  <!-- Include jsPDF for PDF export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
   <script>
     // DOM Elements
-    const dropArea = document.getElementById('dropArea');
     const fileInput = document.getElementById('fileInput');
-    const fileName = document.getElementById('fileName');
-    const loading = document.getElementById('loading');
-    const results = document.getElementById('results');
+    const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+    const statusElement = document.getElementById('status');
+    const resultsElement = document.getElementById('results');
     const productivityTableBody = document.getElementById('productivity-table-body');
     const underutilizationTableBody = document.getElementById('underutilization-table-body');
-    const barChart = document.getElementById('bar-chart');
-    const exportPdfBtn = document.getElementById('exportPdf');
-    const exportCsvBtn = document.getElementById('exportCsv');
+    
+    // Settings
     const hoursPerDayInput = document.getElementById('hoursPerDay');
     const daysPerMonthInput = document.getElementById('daysPerMonth');
     const hourlyRateInput = document.getElementById('hourlyRate');
-    const runAnalysisBtn = document.getElementById('runAnalysisBtn');
-    const statusMessage = document.getElementById('status-message');
     
-    // Settings
-    let hoursPerDay = 8;
-    let daysPerMonth = 22;
-    let hourlyRate = 30;
-    
-    // Track processed data and file
-    let currentFile = null;
-    let tableData = [];
-    
-    // Event Listeners for drag and drop
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropArea.addEventListener(eventName, highlight, false);
-    });
-    
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, unhighlight, false);
-    });
-    
-    function highlight() {
-      dropArea.classList.add('highlight');
-    }
-    
-    function unhighlight() {
-      dropArea.classList.remove('highlight');
-    }
-    
-    // Handle dropped files
-    dropArea.addEventListener('drop', handleDrop, false);
-    
-    function handleDrop(e) {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      
-      if (files.length) {
-        handleFiles(files);
-      }
-    }
-    
-    // Handle file input change
-    fileInput.addEventListener('change', function() {
-      if (fileInput.files.length) {
-        handleFiles(fileInput.files);
-      }
-    });
-    
-    // Settings change listeners
-    hoursPerDayInput.addEventListener('change', function() {
-      hoursPerDay = parseFloat(this.value) || 8;
-    });
-    
-    daysPerMonthInput.addEventListener('change', function() {
-      daysPerMonth = parseInt(this.value) || 22;
-    });
-    
-    hourlyRateInput.addEventListener('change', function() {
-      hourlyRate = parseFloat(this.value) || 30;
-    });
-    
-    // Process the CSV file
-    function handleFiles(files) {
-      currentFile = files[0];
-      fileName.textContent = currentFile.name;
-      
-      // Show run analysis button
-      runAnalysisBtn.style.display = 'block';
-      
-      // Hide any previous results
-      results.classList.add('hidden');
-      
-      // Clear status message
-      statusMessage.style.display = 'none';
-      statusMessage.textContent = '';
-    }
-    
-    // Run Analysis button click handler
+    // Run Analysis Button Click Handler
     runAnalysisBtn.addEventListener('click', function() {
-      if (!currentFile) {
-        showStatusMessage('Please upload a CSV file first.');
+      // Reset status and results
+      statusElement.textContent = '';
+      resultsElement.classList.add('hidden');
+      productivityTableBody.innerHTML = '';
+      underutilizationTableBody.innerHTML = '';
+      
+      // Get file
+      const file = fileInput.files[0];
+      if (!file) {
+        statusElement.textContent = 'Please select a CSV file first.';
         return;
       }
       
-      // Show loading
-      loading.classList.remove('hidden');
-      results.classList.add('hidden');
-      
-      Papa.parse(currentFile, {
-        header: true,
-        dynamicTyping: true,
-        complete: function(results) {
-          console.log("CSV Parsing complete:", results);
-          
-          // Check if we have data
-          if (!results.data || results.data.length === 0) {
-            showStatusMessage('The CSV file appears to be empty.');
-            loading.classList.add('hidden');
-            return;
-          }
-          
-          // Check for required columns
-          const firstRow = results.data[0];
-          const requiredColumns = ["User", "Location Summary", "Productive Hrs/Day", "Offline Meeting Hrs/Day"];
-          const missingColumns = requiredColumns.filter(col => !(col in firstRow));
-          
-          if (missingColumns.length > 0) {
-            showStatusMessage(`Missing required columns: ${missingColumns.join(', ')}. 
-              Please make sure your CSV has the correct column headers.`);
-            console.log("First row data:", firstRow);
-            loading.classList.add('hidden');
-            return;
-          }
-          
-          // Process the data
-          tableData = results.data;
-          const processedData = processData(results.data);
-          
-          if (processedData.length === 0) {
-            showStatusMessage('No valid data found after processing. Please check the CSV format.');
-            loading.classList.add('hidden');
-            return;
-          }
-          
-          // Hide loading
-          loading.classList.add('hidden');
-          results.classList.remove('hidden');
-        },
-        error: function(error) {
-          console.error('Error parsing CSV:', error);
-          showStatusMessage('Error parsing CSV file. Please check the file format.');
-          loading.classList.add('hidden');
-        }
-      });
+      // Read the file
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const csvData = event.target.result;
+        processCSV(csvData);
+      };
+      reader.onerror = function() {
+        statusElement.textContent = 'Error reading the file. Please try again.';
+      };
+      reader.readAsText(file);
     });
     
-    function showStatusMessage(message) {
-      statusMessage.textContent = message;
-      statusMessage.style.display = 'block';
-    }
-    
-    // Process the CSV data
-    function processData(data) {
-      console.log("Processing data...");
-      console.log("Data length:", data.length);
-      console.log("Sample row:", data[0]);
-      
-      // Clear previous results
-      productivityTableBody.innerHTML = '';
-      underutilizationTableBody.innerHTML = '';
-      barChart.innerHTML = '';
-      
-      // Filter out rows with missing location data
-      const validData = data.filter(row => row['Location Summary']);
-      console.log("Valid data after filtering:", validData.length);
-      
-      if (validData.length === 0) {
-        showStatusMessage('No valid location data found in the CSV.');
-        return [];
+    // Process CSV Data
+    function processCSV(csvData) {
+      // Simple CSV parsing (assumes comma-separated values and first row as headers)
+      const rows = csvData.split('\n');
+      if (rows.length <= 1) {
+        statusElement.textContent = 'The CSV file appears to be empty.';
+        return;
       }
       
-      // Calculate location statistics
+      const headers = rows[0].split(',');
+      
+      // Check if the required columns exist
+      const userIndex = headers.findIndex(h => h.trim() === 'User');
+      const locationIndex = headers.findIndex(h => h.trim() === 'Location Summary');
+      const productiveHrsIndex = headers.findIndex(h => h.trim() === 'Productive Hrs/Day');
+      const meetingHrsIndex = headers.findIndex(h => h.trim() === 'Offline Meeting Hrs/Day');
+      
+      if (userIndex === -1 || locationIndex === -1 || productiveHrsIndex === -1 || meetingHrsIndex === -1) {
+        statusElement.textContent = 'Missing required columns. The CSV must include columns: User, Location Summary, Productive Hrs/Day, and Offline Meeting Hrs/Day.';
+        return;
+      }
+      
+      // Settings
+      const hoursPerDay = parseFloat(hoursPerDayInput.value) || 8;
+      const daysPerMonth = parseInt(daysPerMonthInput.value) || 22;
+      const hourlyRate = parseFloat(hourlyRateInput.value) || 30;
+      
+      // Process data
       const locationStats = {};
-      validData.forEach(row => {
-        const location = row['Location Summary'];
+      let totalUsers = 0;
+      
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue; // Skip empty rows
+        
+        const cells = rows[i].split(',');
+        const location = cells[locationIndex].trim();
+        
+        if (!location) continue; // Skip if no location
         
         if (!locationStats[location]) {
           locationStats[location] = {
@@ -509,238 +188,102 @@
         }
         
         locationStats[location].users += 1;
+        totalUsers += 1;
         
-        // Add productive hours if available
-        if (row['Productive Hrs/Day'] !== null && !isNaN(row['Productive Hrs/Day'])) {
-          locationStats[location].totalProductiveHrs += row['Productive Hrs/Day'];
-        }
+        // Add productive hours
+        const productiveHrs = parseFloat(cells[productiveHrsIndex]) || 0;
+        locationStats[location].totalProductiveHrs += productiveHrs;
         
-        // Add meeting hours if available
-        if (row['Offline Meeting Hrs/Day'] !== null && !isNaN(row['Offline Meeting Hrs/Day'])) {
-          locationStats[location].totalOfflineMeetingHrs += row['Offline Meeting Hrs/Day'];
-        }
+        // Add meeting hours
+        const meetingHrs = parseFloat(cells[meetingHrsIndex]) || 0;
+        locationStats[location].totalOfflineMeetingHrs += meetingHrs;
         
-        // Calculate combined hours (productive + meetings) per day
-        const combinedHrsPerDay = (row['Productive Hrs/Day'] || 0) + (row['Offline Meeting Hrs/Day'] || 0);
-        locationStats[location].totalCombinedHrs += combinedHrsPerDay;
-      });
+        // Calculate combined hours
+        const combinedHrs = productiveHrs + meetingHrs;
+        locationStats[location].totalCombinedHrs += combinedHrs;
+      }
       
-      console.log("Location statistics:", locationStats);
+      // If no valid data was found
+      if (totalUsers === 0) {
+        statusElement.textContent = 'No valid data found in the CSV.';
+        return;
+      }
       
-      // Calculate the percentage of total users for each location
-      const totalUsers = validData.length;
-      Object.keys(locationStats).forEach(location => {
-        locationStats[location].percentOfTotalUsers = 
-          ((locationStats[location].users / totalUsers) * 100).toFixed(0) + '%';
-      });
-      
-      // Calculate untapped capacity (FTE) and productivity loss cost
+      // Calculate percentages, untapped capacity, and costs
       Object.keys(locationStats).forEach(location => {
         const stats = locationStats[location];
+        stats.percentOfTotalUsers = ((stats.users / totalUsers) * 100).toFixed(0) + '%';
+        
         const avgHrsPerDay = stats.totalCombinedHrs / stats.users;
         const untappedHrsPerDay = Math.max(0, hoursPerDay - avgHrsPerDay);
         stats.untappedCapacityFTE = (untappedHrsPerDay * stats.users / hoursPerDay).toFixed(2);
-        stats.productivityLossCost = 
-          (untappedHrsPerDay * stats.users * hourlyRate * daysPerMonth).toFixed(0);
+        stats.productivityLossCost = '$' + (untappedHrsPerDay * stats.users * hourlyRate * daysPerMonth).toFixed(0);
       });
       
-      // Prepare the data for the visualization
-      const resultData = Object.keys(locationStats).map(location => {
-        const stats = locationStats[location];
-        return {
-          location: location,
-          users: stats.users,
-          percentOfTotalUsers: stats.percentOfTotalUsers,
-          untappedCapacityFTE: stats.untappedCapacityFTE,
-          productivityLossCost: '$' + Number(stats.productivityLossCost).toLocaleString()
-        };
+      // Calculate total untapped capacity and cost
+      let totalUntappedCapacityFTE = 0;
+      let totalProductivityLossCost = 0;
+      
+      Object.values(locationStats).forEach(stats => {
+        totalUntappedCapacityFTE += parseFloat(stats.untappedCapacityFTE);
+        totalProductivityLossCost += parseFloat(stats.productivityLossCost.replace('$', ''));
       });
       
-      // Add a total row
-      const totalStats = {
-        location: 'Total',
-        users: totalUsers,
-        percentOfTotalUsers: '100%',
-        untappedCapacityFTE: Object.values(locationStats).reduce(
-          (sum, stats) => sum + parseFloat(stats.untappedCapacityFTE), 0
-        ).toFixed(2),
-        productivityLossCost: '$' + Object.values(locationStats).reduce(
-          (sum, stats) => sum + parseInt(stats.productivityLossCost), 0
-        ).toLocaleString()
-      };
+      // Display results
+      displayProductivityTable(locationStats, totalUsers, totalUntappedCapacityFTE, totalProductivityLossCost);
+      displayUnderutilizationTable(locationStats);
       
-      resultData.push(totalStats);
-      
-      console.log("Final result data:", resultData);
-      
-      // Populate the Productivity Loss Table
-      resultData.forEach(row => {
-        const tr = document.createElement('tr');
-        
-        const locationCell = document.createElement('td');
-        locationCell.textContent = row.location;
-        tr.appendChild(locationCell);
-        
-        const usersCell = document.createElement('td');
-        usersCell.textContent = row.users;
-        tr.appendChild(usersCell);
-        
-        const percentCell = document.createElement('td');
-        percentCell.textContent = row.percentOfTotalUsers;
-        tr.appendChild(percentCell);
-        
-        const untappedCell = document.createElement('td');
-        untappedCell.textContent = row.untappedCapacityFTE;
-        tr.appendChild(untappedCell);
-        
-        const costCell = document.createElement('td');
-        costCell.textContent = row.productivityLossCost;
-        tr.appendChild(costCell);
-        
-        productivityTableBody.appendChild(tr);
-      });
-      
-      // Populate the Underutilization Table
-      const locations = resultData.filter(item => item.location !== 'Total');
-      
-      locations.forEach(row => {
-        const tr = document.createElement('tr');
-        
-        const locationCell = document.createElement('td');
-        locationCell.textContent = row.location;
-        tr.appendChild(locationCell);
-        
-        const countCell = document.createElement('td');
-        countCell.textContent = row.users;
-        tr.appendChild(countCell);
-        
-        const percentCell = document.createElement('td');
-        percentCell.textContent = row.percentOfTotalUsers;
-        tr.appendChild(percentCell);
-        
-        const capacityCell = document.createElement('td');
-        capacityCell.textContent = row.untappedCapacityFTE;
-        capacityCell.innerHTML += `<br>${row.productivityLossCost}`;
-        tr.appendChild(capacityCell);
-        
-        underutilizationTableBody.appendChild(tr);
-      });
-      
-      // Create bar chart for visualization
-      if (locations.length > 0) {
-        const maxUsers = Math.max(...locations.map(loc => loc.users));
-        
-        locations.forEach(location => {
-          const barHeight = (location.users / maxUsers) * 100;
-          
-          const barContainer = document.createElement('div');
-          barContainer.style.display = 'flex';
-          barContainer.style.flexDirection = 'column';
-          barContainer.style.alignItems = 'center';
-          barContainer.style.flex = '1';
-          
-          const bar = document.createElement('div');
-          bar.className = 'bar';
-          bar.style.height = `${barHeight}%`;
-          bar.style.width = '60px';
-          
-          const barValue = document.createElement('div');
-          barValue.className = 'bar-value';
-          barValue.textContent = location.users;
-          bar.appendChild(barValue);
-          
-          const barLabel = document.createElement('div');
-          barLabel.className = 'bar-label';
-          barLabel.textContent = location.location;
-          
-          barContainer.appendChild(bar);
-          barContainer.appendChild(barLabel);
-          barChart.appendChild(barContainer);
-        });
-      }
-      
-      return resultData;
+      // Show results section
+      resultsElement.classList.remove('hidden');
     }
     
-    // Export as PDF
-    exportPdfBtn.addEventListener('click', function() {
-      if (!tableData.length) {
-        alert('Please upload and process a CSV file first.');
-        return;
-      }
-      
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Add title
-      doc.setFontSize(18);
-      doc.text('ActivTrak Underutilization by Work Mode', 14, 20);
-      
-      // Add date
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-      
-      // Add settings info
-      doc.text(`Settings: ${hoursPerDay} hours/day, ${daysPerMonth} days/month, $${hourlyRate}/hour`, 14, 40);
-      
-      // Create table for Productivity Loss by Location
-      const prodLossTableRows = Array.from(productivityTableBody.rows).map(row => {
-        return Array.from(row.cells).map(cell => cell.textContent);
+    // Display Productivity Loss Table
+    function displayProductivityTable(locationStats, totalUsers, totalUntappedCapacityFTE, totalProductivityLossCost) {
+      // Add rows for each location
+      Object.keys(locationStats).forEach(location => {
+        const stats = locationStats[location];
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${location}</td>
+          <td>${stats.users}</td>
+          <td>${stats.percentOfTotalUsers}</td>
+          <td>${stats.untappedCapacityFTE}</td>
+          <td>${stats.productivityLossCost}</td>
+        `;
+        
+        productivityTableBody.appendChild(row);
       });
       
-      doc.autoTable({
-        head: [['Location', 'Users', '% of Total Users', 'Untapped Capacity (FTE)', 'Productivity Loss Cost (Monthly)']],
-        body: prodLossTableRows,
-        startY: 50,
-        headStyles: { fillColor: [0, 102, 204] }
-      });
-      
-      // Create table for Underutilization by Work Mode
-      const underutilTableRows = Array.from(underutilizationTableBody.rows).map(row => {
-        return Array.from(row.cells).map(cell => cell.textContent.replace(/\n/g, ' '));
-      });
-      
-      doc.autoTable({
-        head: [['Location', 'Employee Count', '% of Workforce', 'Untapped Capacity (FTE/Month)']],
-        body: underutilTableRows,
-        startY: doc.lastAutoTable.finalY + 15,
-        headStyles: { fillColor: [0, 102, 204] }
-      });
-      
-      // Save the PDF
-      doc.save('activtrak-underutilization-report.pdf');
-    });
+      // Add total row
+      const totalRow = document.createElement('tr');
+      totalRow.innerHTML = `
+        <td>Total</td>
+        <td>${totalUsers}</td>
+        <td>100%</td>
+        <td>${totalUntappedCapacityFTE.toFixed(2)}</td>
+        <td>$${totalProductivityLossCost.toFixed(0)}</td>
+      `;
+      productivityTableBody.appendChild(totalRow);
+    }
     
-    // Export as CSV
-    exportCsvBtn.addEventListener('click', function() {
-      if (!tableData.length) {
-        alert('Please upload and process a CSV file first.');
-        return;
-      }
-      
-      // Get all rows from the productivity table
-      const rows = Array.from(productivityTableBody.rows).map(row => {
-        return Array.from(row.cells).map(cell => cell.textContent);
+    // Display Underutilization Table
+    function displayUnderutilizationTable(locationStats) {
+      // Add rows for each location
+      Object.keys(locationStats).forEach(location => {
+        const stats = locationStats[location];
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${location}</td>
+          <td>${stats.users}</td>
+          <td>${stats.percentOfTotalUsers}</td>
+          <td>${stats.untappedCapacityFTE}<br>${stats.productivityLossCost}</td>
+        `;
+        
+        underutilizationTableBody.appendChild(row);
       });
-      
-      // Add header row
-      const headers = ['Location', 'Users', '% of Total Users', 'Untapped Capacity (FTE)', 'Productivity Loss Cost (Monthly)'];
-      rows.unshift(headers);
-      
-      // Convert to CSV
-      let csvContent = rows.map(row => row.join(',')).join('\n');
-      
-      // Create a blob and download link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'activtrak-underutilization-report.csv');
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+    }
   </script>
 </body>
 </html>
