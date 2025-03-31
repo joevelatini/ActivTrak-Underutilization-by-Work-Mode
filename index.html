@@ -1,805 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivTrak Underutilization by Work Mode</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: white;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-        .logo img {
-            width: 60px;
-            height: auto;
-            margin-right: 15px;
-        }
-        .logo-icon {
-            width: 60px;
-            height: 60px;
-            margin-right: 15px;
-        }
-        .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-        }
-        .map-icon {
-            color: #2563EB;
-            font-size: 32px;
-        }
-        .divider {
-            height: 2px;
-            background-color: #2563EB;
-            margin: 0 20px;
-        }
-        .panel {
-            background-color: white;
-            border-radius: 8px;
-            margin: 20px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .panel-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            flex: 1;
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 16px;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .file-input {
-            display: flex;
-            gap: 10px;
-        }
-        .file-input-label {
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            font-weight: 600;
-            color: #333;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .file-input-label:hover {
-            background-color: #e9ecef;
-            border-color: #ced4da;
-        }
-        .file-name {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            color: #666;
-            background-color: #f8f9fa;
-            font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .button-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        button {
-            border: none;
-            border-radius: 4px;
-            padding: 12px 20px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn-primary {
-            background-color: #2563EB;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #1E40AF;
-        }
-        .btn-sample {
-            background-color: #2563EB;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px 25px;
-            min-height: 70px;
-        }
-        .btn-sample:hover {
-            background-color: #1E40AF;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        .btn-disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .metrics-container {
-            margin: 30px 0;
-        }
-        .location-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px dotted #ccc;
-            padding: 15px 0;
-        }
-        .location-row:last-child {
-            border-bottom: none;
-        }
-        .location-label {
-            width: 130px;
-            font-weight: bold;
-        }
-        .bar-container {
-            flex: 1;
-            margin: 0 20px;
-        }
-        .bar {
-            height: 34px;
-            background-color: #2563EB;
-            display: flex;
-            align-items: center;
-            color: white;
-            padding: 0 10px;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-        .metrics {
-            width: 140px;
-            text-align: right;
-        }
-        .percentage {
-            text-align: right;
-            width: 80px;
-            font-weight: bold;
-        }
-        .fte {
-            font-weight: bold;
-        }
-        .cost {
-            color: #d32f2f;
-            font-weight: bold;
-        }
-        .insights {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-        }
-        .insights ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        .insights li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 30px;
-            padding: 20px;
-        }
-        .error {
-            background-color: #ffebee;
-            border-left: 4px solid #f44336;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #d32f2f;
-        }
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-            font-weight: 600;
-        }
-        .hidden {
-            display: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #2563EB;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .text-right {
-            text-align: right;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ActivTrak Productivity Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0066cc;
+    }
+    .file-upload {
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    .file-upload.highlight {
+      border-color: #0066cc;
+      background-color: #e9f2fd;
+    }
+    .upload-btn {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .upload-btn:hover {
+      background-color: #0052a3;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      background-color: #0066cc;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    tr:last-child td {
+      font-weight: bold;
+      border-top: 2px solid #333;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      height: 200px;
+      margin-top: 20px;
+      position: relative;
+    }
+    .bar {
+      flex: 1;
+      background-color: #0066cc;
+      margin: 0 20px;
+      position: relative;
+      text-align: center;
+    }
+    .bar-label {
+      position: absolute;
+      bottom: -30px;
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+    }
+    .bar-value {
+      position: absolute;
+      top: -25px;
+      width: 100%;
+      text-align: center;
+      color: #333;
+    }
+    .hidden {
+      display: none;
+    }
+    .instructions {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .instructions h3 {
+      margin-top: 0;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0066cc;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .export-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    .export-btn:hover {
+      background-color: #218838;
+    }
+    .settings {
+      margin-bottom: 20px;
+    }
+    .settings-group {
+      margin-bottom: 15px;
+    }
+    .settings-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .settings-input {
+      width: 100px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="100,20 30,130 170,130" fill="#2563EB" />
-                        <polygon points="80,60 40,130 120,130" fill="#00B2A9" />
-                        <polygon points="80,90 60,130 100,130" fill="#2D3E50" />
-                    </svg>
-                </div>
-                <div class="title">ActivTrak Underutilization by Work Mode</div>
-            </div>
-            <div class="map-icon">
-                <svg viewBox="0 0 24 24" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" fill="#2563EB"/>
-                </svg>
-            </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Settings Panel -->
-        <div class="panel">
-            <div class="panel-title">Analysis Settings</div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="productivityGoal">Productivity Goal (hours/day)</label>
-                    <input type="number" id="productivityGoal" min="1" max="24" step="0.1" value="7.5">
-                </div>
-                <div class="form-group">
-                    <label for="annualSalary">Annual Salary for Cost Calculation ($)</label>
-                    <input type="number" id="annualSalary" min="10000" step="1000" value="60000">
-                </div>
-            </div>
-        </div>
-
-        <!-- File Upload -->
-        <div class="panel">
-            <div class="panel-title">Upload and Configure Data</div>
-            <div class="form-group">
-                <label for="csvFile">Upload CSV File</label>
-                <div class="file-input">
-                    <label class="file-input-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px; vertical-align: -2px;">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="12" y1="18" x2="12" y2="12"></line>
-                            <line x1="9" y1="15" x2="15" y2="15"></line>
-                        </svg>
-                        Choose File
-                        <input type="file" id="csvFile" accept=".csv" style="display:none">
-                    </label>
-                    <div id="fileName" class="file-name">No file chosen</div>
-                    <button id="demoButton" class="btn-sample">
-                        Use Sample<br>Data
-                    </button>
-                </div>
-            </div>
-            
-            <div id="columnSelectors">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="locationColumn">Location/Work Mode Column</label>
-                        <select id="locationColumn">
-                            <option value="">-- Select Column --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="productiveHoursColumn">Productive Hours Column</label>
-                        <select id="productiveHoursColumn">
-                            <option value="">-- Select Column --</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="meetingHoursColumn">Offline Meeting Hours Column</label>
-                        <select id="meetingHoursColumn">
-                            <option value="">-- Select Column --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <!-- Empty space for alignment -->
-                    </div>
-                </div>
-                <div class="button-row">
-                    <button id="analyzeButton" class="btn-primary btn-disabled" disabled>Analyze Data</button>
-                    <button id="resetButton" class="btn-secondary">Reset</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Error message -->
-        <div id="errorContainer" class="error hidden"></div>
-
-        <!-- Loading indicator -->
-        <div id="loadingContainer" class="loading hidden">
-            Processing data...
-        </div>
-
-        <!-- Results container -->
-        <div id="resultsContainer" class="panel hidden">
-            <div class="panel-title">Underutilization by Work Mode (Productivity Goal: <span id="goalDisplay">7.5</span> hrs)</div>
-            
-            <div class="metrics-container">
-                <h3>Location Summary - Employees Below Goal</h3>
-                <div id="locationRows">
-                    <!-- Location rows will be inserted here -->
-                </div>
-            </div>
-            
-            <div class="insights">
-                <h3>Key Insights</h3>
-                <ul id="insightsList">
-                    <!-- Insights will be inserted here -->
-                </ul>
-            </div>
-            
-            <!-- Data Sample -->
-            <h3>Data Sample (First 10 Records)</h3>
-            <div style="overflow-x: auto;">
-                <table id="sampleTable">
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>Location</th>
-                            <th class="text-right">Productive Hours</th>
-                            <th class="text-right">Meeting Hours</th>
-                            <th class="text-right">Combined Hours</th>
-                            <th class="text-right">Target</th>
-                            <th class="text-right">Delta</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sampleTableBody">
-                        <!-- Sample data will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="footer">
-            ActivTrak Underutilization by Work Mode | Data analysis based on CSV upload
-        </div>
+  <div class="container">
+    <div class="header">
+      <div class="logo">ActivTrak Productivity Tracker</div>
+      <div>
+        <button id="exportPdf" class="export-btn">Export PDF</button>
+        <button id="exportCsv" class="export-btn">Export CSV</button>
+      </div>
+    </div>
+    
+    <div class="instructions">
+      <h3>Instructions</h3>
+      <p>Upload your ActivTrak user details CSV file to generate productivity loss metrics. 
+        The file should include columns for User, Location Summary, Productive Hrs/Day, 
+        and Offline Meeting Hrs/Day.</p>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Main variables
-            let data = [];
-            let headers = [];
-            let selectedColumns = {
-                location: '',
-                productiveHours: '',
-                meetingHours: ''
-            };
-            let analysisResults = null;
-            
-            // DOM elements
-            const productivityGoalInput = document.getElementById('productivityGoal');
-            const annualSalaryInput = document.getElementById('annualSalary');
-            const csvFileInput = document.getElementById('csvFile');
-            const fileNameDisplay = document.getElementById('fileName');
-            const demoButton = document.getElementById('demoButton');
-            const columnSelectors = document.getElementById('columnSelectors');
-            const locationColumnSelect = document.getElementById('locationColumn');
-            const productiveHoursColumnSelect = document.getElementById('productiveHoursColumn');
-            const meetingHoursColumnSelect = document.getElementById('meetingHoursColumn');
-            const analyzeButton = document.getElementById('analyzeButton');
-            const resetButton = document.getElementById('resetButton');
-            const errorContainer = document.getElementById('errorContainer');
-            const loadingContainer = document.getElementById('loadingContainer');
-            const resultsContainer = document.getElementById('resultsContainer');
-            const goalDisplay = document.getElementById('goalDisplay');
-            
-            // Event listeners
-            csvFileInput.addEventListener('change', handleFileUpload);
-            demoButton.addEventListener('click', useSampleData);
-            locationColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-            productiveHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-            meetingHoursColumnSelect.addEventListener('change', updateAnalyzeButtonState);
-            analyzeButton.addEventListener('click', analyzeData);
-            resetButton.addEventListener('click', resetApplication);
-            productivityGoalInput.addEventListener('change', updateGoalDisplay);
-            
-            // Update file name display when a file is selected
-            csvFileInput.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    fileNameDisplay.textContent = file.name;
-                } else {
-                    fileNameDisplay.textContent = 'No file chosen';
-                }
-            });
-            
-            // Update goal display when input changes
-            function updateGoalDisplay() {
-                goalDisplay.textContent = productivityGoalInput.value;
-            }
-            
-            // Functions
-            function handleFileUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                loadingContainer.classList.remove('hidden');
-                errorContainer.classList.add('hidden');
-                resultsContainer.classList.add('hidden');
-                
-                Papa.parse(file, {
-                    header: true,
-                    skipEmptyLines: true,
-                    dynamicTyping: true,
-                    complete: function(results) {
-                        loadingContainer.classList.add('hidden');
-                        
-                        if (results.data && results.data.length > 0) {
-                            data = results.data;
-                            headers = results.meta.fields;
-                            populateColumnSelectors();
-                        } else {
-                            showError("No data found in the CSV file.");
-                        }
-                    },
-                    error: function(error) {
-                        loadingContainer.classList.add('hidden');
-                        showError(`Error parsing CSV: ${error.message}`);
-                    }
-                });
-            }
-            
-            function populateColumnSelectors() {
-                // Clear existing options except the first one
-                while (locationColumnSelect.options.length > 1) {
-                    locationColumnSelect.remove(1);
-                }
-                
-                while (productiveHoursColumnSelect.options.length > 1) {
-                    productiveHoursColumnSelect.remove(1);
-                }
-                
-                while (meetingHoursColumnSelect.options.length > 1) {
-                    meetingHoursColumnSelect.remove(1);
-                }
-                
-                // Add new options
-                headers.forEach(header => {
-                    const locationOption = document.createElement('option');
-                    locationOption.value = header;
-                    locationOption.textContent = header;
-                    locationColumnSelect.appendChild(locationOption);
-                    
-                    const productiveOption = document.createElement('option');
-                    productiveOption.value = header;
-                    productiveOption.textContent = header;
-                    productiveHoursColumnSelect.appendChild(productiveOption);
-                    
-                    const meetingOption = document.createElement('option');
-                    meetingOption.value = header;
-                    meetingOption.textContent = header;
-                    meetingHoursColumnSelect.appendChild(meetingOption);
-                });
-            }
-            
-            function updateAnalyzeButtonState() {
-                selectedColumns.location = locationColumnSelect.value;
-                selectedColumns.productiveHours = productiveHoursColumnSelect.value;
-                selectedColumns.meetingHours = meetingHoursColumnSelect.value;
-                
-                if (!selectedColumns.location || !selectedColumns.productiveHours) {
-                    analyzeButton.disabled = true;
-                    analyzeButton.classList.add('btn-disabled');
-                } else {
-                    analyzeButton.disabled = false;
-                    analyzeButton.classList.remove('btn-disabled');
-                }
-            }
-            
-            function showError(message) {
-                errorContainer.textContent = message;
-                errorContainer.classList.remove('hidden');
-            }
-            
-            function analyzeData() {
-                loadingContainer.classList.remove('hidden');
-                errorContainer.classList.add('hidden');
-                resultsContainer.classList.add('hidden');
-                
-                const productivityGoal = parseFloat(productivityGoalInput.value);
-                const annualSalary = parseFloat(annualSalaryInput.value);
-                
-                try {
-                    // Process the data
-                    const employeeData = data.map((row, index) => {
-                        // Get the location value, using bracket notation for proper field access
-                        const location = row[selectedColumns.location] || 'Unknown';
-                        
-                        // Ensure values are properly parsed as numbers
-                        const productiveHours = parseFloat(row[selectedColumns.productiveHours]) || 0;
-                        const meetingHours = parseFloat(row[selectedColumns.meetingHours]) || 0;
-                        const combinedHours = productiveHours + meetingHours;
-                        const delta = productivityGoal - combinedHours; // Positive delta means under goal
-                        
-                        return {
-                            employeeId: `Emp${index + 1}`,
-                            location,
-                            productiveHours,
-                            meetingHours,
-                            combinedHours,
-                            delta,
-                            isUnderGoal: combinedHours < productivityGoal
-                        };
-                    });
-                    
-                    // Group by location
-                    const grouped = _.groupBy(employeeData, 'location');
-                    
-                    // Calculate metrics for each location
-                    const locations = Object.keys(grouped).map(location => {
-                        const employees = grouped[location];
-                        const count = employees.length;
-                        const percentage = ((count / employeeData.length) * 100).toFixed(1);
-                        
-                        // Filter employees that are under the productivity goal
-                        const underGoalEmployees = employees.filter(emp => emp.isUnderGoal);
-                        const underGoalCount = underGoalEmployees.length;
-                        
-                        // Calculate total delta hours (only for underperforming employees)
-                        const totalDelta = underGoalEmployees.reduce((sum, emp) => sum + emp.delta, 0);
-                        
-                        // Calculate FTE based on delta hours
-                        const fte = Math.round(totalDelta / 8);
-                        const monthlyCost = Math.round(fte * (annualSalary / 12));
-                        
-                        return {
-                            location,
-                            count,
-                            underGoalCount,
-                            percentage,
-                            totalDelta: totalDelta.toFixed(2),
-                            fte,
-                            monthlyCost
-                        };
-                    });
-                    
-                    // Sort locations by underperforming employee count (descending)
-                    const sortedLocations = _.sortBy(locations, loc => -loc.underGoalCount);
-                    
-                    // Calculate undergoal totals
-                    const totalUnderGoal = employeeData.filter(emp => emp.isUnderGoal).length;
-                    const totalDelta = employeeData.filter(emp => emp.isUnderGoal).reduce((sum, emp) => sum + emp.delta, 0);
-                    const totalFTE = Math.round(totalDelta / 8);
-                    const totalMonthlyCost = Math.round(totalFTE * (annualSalary / 12));
-                    
-                    // Set the results
-                    analysisResults = {
-                        locations: sortedLocations,
-                        totalEmployees: employeeData.length,
-                        totalUnderGoal,
-                        totalDelta,
-                        totalFTE,
-                        totalMonthlyCost,
-                        employeeData: employeeData.slice(0, 10) // Just include first 10 for sample
-                    };
-                    
-                    // Update the goal display
-                    goalDisplay.textContent = productivityGoalInput.value;
-                    
-                    // Display the results
-                    displayResults();
-                    
-                } catch (err) {
-                    loadingContainer.classList.add('hidden');
-                    showError(`Analysis error: ${err.message}`);
-                    console.error(err);
-                }
-            }
-            
-            function displayResults() {
-                if (!analysisResults) return;
-                
-                // Update location rows
-                const locationRows = document.getElementById('locationRows');
-                locationRows.innerHTML = '';
-                
-                // Find max count for scaling bars
-                const maxCount = Math.max(...analysisResults.locations.map(loc => loc.underGoalCount || 0));
-                
-                analysisResults.locations.forEach(location => {
-                    const row = document.createElement('div');
-                    row.className = 'location-row';
-                    
-                    // Calculate width percentage (max 85%)
-                    const widthPercentage = Math.min(85, maxCount > 0 ? (location.underGoalCount / maxCount) * 85 : 0);
-                    
-                    // Display count of employees under goal
-                    row.innerHTML = `
-                        <div class="location-label">${location.location}</div>
-                        <div class="bar-container">
-                            <div class="bar" style="width: ${widthPercentage}%">${location.underGoalCount}</div>
-                        </div>
-                        <div class="percentage">${location.percentage}%</div>
-                        <div class="metrics">
-                            <div class="fte">${location.fte} FTE</div>
-                            <div class="cost">$${location.monthlyCost.toLocaleString()}</div>
-                        </div>
-                    `;
-                    
-                    locationRows.appendChild(row);
-                });
-                
-                // Update insights
-                const insightsList = document.getElementById('insightsList');
-                insightsList.innerHTML = '';
-                
-                // Generate insights
-                let insights = [];
-                
-                // Sort locations by productivity (highest delta first)
-                const productivitySorted = _.sortBy(analysisResults.locations, loc => -loc.fte);
-                
-                // Add insights based on the data
-                if (productivitySorted.length > 0) {
-                    const leastProductive = productivitySorted[0].location;
-                    const mostProductive = productivitySorted[productivitySorted.length - 1].location;
-                    
-                    insights = [
-                        `Employees working in <strong>${leastProductive}</strong> mode show the lowest average productivity`,
-                        `<strong>${mostProductive}</strong> workers demonstrate the highest productivity levels`,
-                        `The largest workforce investment is in the <strong>${leastProductive}</strong> category (${productivitySorted[0].fte} FTE, $${productivitySorted[0].monthlyCost.toLocaleString()})`,
-                        `${analysisResults.totalFTE} total FTE across all work modes`,
-                        `Current monthly cost across all locations: $${analysisResults.totalMonthlyCost.toLocaleString()}`
-                    ];
-                    
-                    // Add remote vs office comparison if both exist
-                    const hasOffice = analysisResults.locations.some(loc => 
-                        loc.location.toLowerCase().includes('office'));
-                    const hasRemote = analysisResults.locations.some(loc => 
-                        loc.location.toLowerCase().includes('remote'));
-                    
-                    if (hasOffice && hasRemote) {
-                        insights.push('Employees with some remote ability seem more productive overall compared to office-only staff');
-                    }
-                }
-                
-                // Add insights to the list
-                insights.forEach(insight => {
-                    const li = document.createElement('li');
-                    li.innerHTML = insight;
-                    insightsList.appendChild(li);
-                });
-                
-                // Update sample data
-                const sampleTableBody = document.getElementById('sampleTableBody');
-                sampleTableBody.innerHTML = '';
-                
-                analysisResults.employeeData.forEach((employee, index) => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${employee.employeeId}</td>
-                        <td>${employee.location}</td>
-                        <td class="text-right">${employee.productiveHours.toFixed(2)}</td>
-                        <td class="text-right">${employee.meetingHours.toFixed(2)}</td>
-                        <td class="text-right">${employee.combinedHours.toFixed(2)}</td>
-                        <td class="text-right">${productivityGoalInput.value}</td>
-                        <td class="text-right">${employee.delta.toFixed(2)}</td>
-                    `;
-                    
-                    sampleTableBody.appendChild(row);
-                });
-                
-                // Show results
-                resultsContainer.classList.remove('hidden');
-                loadingContainer.classList.add('hidden');
-            }
-            
-            function useSampleData() {
-                loadingContainer.classList.remove('hidden');
-                errorContainer.classList.add('hidden');
-                resultsContainer.classList.add('hidden');
-                
-                // Update file name display
-                fileNameDisplay.textContent = 'user_details';
-                
-                // Clear file input
-                csvFileInput.value = '';
-                
-                setTimeout(function() {
-                    // Create sample data - ensured to have correct JSON syntax
-                    const sampleData = [
-                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.5 },
-                        { "Location": "Office Only", "ProductiveHours": 4.2, "MeetingHours": 0.5 },
-                        { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.5 },
-                        { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 5.0, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.5, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.8, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.4, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.7, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.3, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.9, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.1, "MeetingHours": 0.4 },
-                        { "Location": "Office Only", "ProductiveHours": 4.6, "MeetingHours": 0.4 },
-                        
-                        { "Location": "Hybrid", "ProductiveHours": 5.8, "MeetingHours": 0.7 },
-                        { "Location": "Hybrid", "ProductiveHours": 6.0, "MeetingHours": 0.8 },
-                        { "Location": "Hybrid", "ProductiveHours": 5.5, "MeetingHours": 0.7 },
-                        { "Location": "Hybrid", "ProductiveHours": 5.9, "MeetingHours": 0.8 },
-                        { "Location": "Hybrid", "ProductiveHours": 5.7, "MeetingHours": 0.7 },
-                        { "Location": "Hybrid", "ProductiveHours": 6.1, "MeetingHours": 0.8 },
-                        { "Location": "Hybrid", "ProductiveHours": 5.6, "MeetingHours": 0.7 },
-                        
-                        { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.4, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 5.8, "MeetingHours": 0.6 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.1, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 5.9, "MeetingHours": 0.6 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.5, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.0, "MeetingHours": 0.6 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.2, "MeetingHours": 0.7 },
-                        { "Location": "Remote Only", "ProductiveHours": 6.3, "MeetingHours": 0.7 }
+    <div class="settings card">
+      <div class="card-header">Settings</div>
+      <div class="card-body">
+        <div class="settings-group">
+          <label class="settings-label">Hours per workday:</label>
+          <input type="number" id="hoursPerDay" class="settings-input" value="8" min="1" max="24">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Working days per month:</label>
+          <input type="number" id="daysPerMonth" class="settings-input" value="22" min="1" max="31">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Hourly rate ($):</label>
+          <input type="number" id="hourlyRate" class="settings-input" value="30" min="1">
+        </div>
+      </div>
+    </div>
+    
+    <div class="file-upload" id="dropArea">
+      <p>Drag & drop your CSV file here or</p>
+      <input type="file" id="fileInput" accept=".csv" style="display: none;">
+      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+      <p id="fileName"></p>
+    </div>
+    
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Processing data...</p>
+    </div>
+
+    <!-- Results section - initially hidden -->
+    <div id="results" class="hidden">
+      <!-- Productivity Loss by Location Table -->
+      <div class="card">
+        <div class="card-header">Monthly Productivity Loss by Location</div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Users</th>
+                <th>% of Total Users</th>
+                <th>Untapped Capacity (FTE)</th>
+                <th>Productivity Loss Cost (Monthly)</th>
+              </tr>
+            </thead>
+            <tbody id="productivity-table-body">
+              <!-- This will be filled with JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Underutilization by Work Mode -->
+      <div class="card">
+        <div class="card-header">Underutilization by Work Mode</div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Employee Count</th>
+                <th>% of Workforce</th>
+                <th>Untapped Capacity (FTE/Month)</th>
+              </tr>
+            </thead>
+            <tbody id="underutilization-table-body">
+              <!-- This will be filled with JavaScript -->
+            </tbody>
+          </table>
+          
+          <div class="bar-chart" id="bar-chart">
+            <!-- This will be filled with JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Papa Parse for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <!-- Include jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    // DOM Elements
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    const productivityTableBody = document.getElementById('productivity-table-body');
+    const underutilizationTableBody = document.getElementById('underutilization-table-body');
+    const barChart = document.getElementById('bar-chart');
+    const exportPdfBtn = document.getElementById('exportPdf');
+    const exportCsvBtn = document.getElementById('exportCsv');
+    const hoursPerDayInput = document.getElementById('hoursPerDay');
+    const daysPerMonthInput = document.getElementById('daysPerMonth');
+    const hourlyRateInput = document.getElementById('hourlyRate');
+    
+    // Settings
+    let hoursPerDay = 8;
+    let daysPerMonth = 22;
+    let hourlyRate = 30;
+    
+    // Track processed data
+    let tableData = [];
+    
+    // Event Listeners for drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropArea.classList.add('highlight');
+    }
+    
+    function unhighlight() {
+      dropArea.classList.remove('highlight');
+    }
+    
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (files.length) {
+        handleFiles(files);
+      }
+    }
+    
+    // Handle file input change
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) {
+        handleFiles(fileInput.files);
+      }
+    });
+    
+    // Settings change listeners
+    hoursPerDayInput.addEventListener('change', function() {
+      hoursPerDay = parseFloat(this.value) || 8;
+      if (tableData.length) {
+        processData(tableData);
+      }
+    });
+    
+    daysPerMonthInput.addEventListener('change', function() {
+      daysPerMonth = parseInt(this.value) || 22;
+      if (tableData.length) {
+        processData(tableData);
+      }
+    });
+    
+    hourlyRateInput.addEventListener('change', function() {
+      hourlyRate = parseFloat(this.value) || 30;
+      if (tableData.length) {
+        processData(tableData);
+      }
+    });
+    
+    // Process the CSV file
+    function handleFiles(files) {
+      const file = files[0];
+      fileName.textContent = file.name;
+      
+      // Show loading
+      loading.classList.remove('hidden');
+      results.classList.add('hidden');
+      
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+          // Process the data
+          tableData = results.data;
+          processData(results.data);
+          
+          // Hide loading
+          loading.classList.add('hidden');
+          results.classList.remove('hidden');
+        },
+        error: function(error) {
+          console.error('Error parsing CSV:', error);
+          alert('Error parsing CSV file. Please check the file format.');
+          loading.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Process the CSV data
+    function processData(data) {
+      // Clear previous results
+      productivityTableBody.innerHTML = '';
+      underutilizationTableBody.innerHTML = '';
+      barChart.innerHTML = '';
+      
+      // Filter out rows with missing location data
+      const validData = data.filter(row => row['Location Summary']);
+      
+      // Calculate location statistics
+      const locationStats = {};
+      validData.forEach(row => {
+        const location = row['Location Summary'];
+        
+        if (!locationStats[location]) {
+          locationStats[location] = {
+            users: 0,
+            totalProductiveHrs: 0,
+            totalOfflineMeetingHrs: 0,
+            totalCombinedHrs: 0
+          };
+        }
+        
+        locationStats[location].users += 1;
+        
+        // Add productive hours if available
+        if (row['Productive Hrs/Day'] !== null && !isNaN(row['Productive Hrs/Day'])) {
+          locationStats[location].totalProductiveHrs += row['Productive Hrs/Day'];
+        }
+        
+        // Add meeting hours if available
+        if (row['Offline Meeting Hrs/Day'] !== null && !isNaN(row['Offline Meeting Hrs/Day'])) {
+          locationStats[location].totalOfflineMeetingHrs += row['Offline Meeting Hrs/Day'];
+        }
+        
+        // Calculate combined hours (productive + meetings) per day
+        const combinedHrsPerDay = (row['Productive Hrs/Day'] || 0) + (row['Offline Meeting Hrs/Day'] || 0);
+        locationStats[location].totalCombinedHrs += combinedHrsPerDay;
+      });
+      
+      // Calculate the percentage of total users for each location
+      const totalUsers = validData.length;
+      Object.keys(locationStats).forEach(location => {
+        locationStats[location].percentOfTotalUsers = 
+          ((locationStats[location].users / totalUsers) * 100).toFixed(0) + '%';
+      });
+      
+      // Calculate untapped capacity (FTE) and productivity loss cost
+      Object.keys(locationStats).forEach(location => {
+        const stats = locationStats[location];
+        const avgHrsPerDay = stats.totalCombinedHrs / stats.users;
+        const untappedHrsPerDay = Math.max(0, hoursPerDay - avgHrsPerDay);
+        stats.untappedCapacityFTE = (untappedHrsPerDay * stats.users / hoursPerDay).toFixed(2);
+        stats.productivityLossCost = 
+          (untappedHrsPerDay * stats.users * hourlyRate * daysPerMonth).toFixed(0);
+      });
+      
+      // Prepare the data for the visualization
+      const resultData = Object.keys(locationStats).map(location => {
+        const stats = locationStats[location];
+        return {
+          location: location,
+          users: stats.users,
+          percentOfTotalUsers: stats.percentOfTotalUsers,
+          untappedCapacityFTE: stats.untappedCapacityFTE,
+          productivityLossCost: '$' + Number(stats.productivityLossCost).toLocaleString()
+        };
+      });
+      
+      // Add a total row
+      const totalStats = {
+        location: 'Total',
+        users: totalUsers,
+        percentOfTotalUsers: '100%',
+        untappedCapacityFTE: Object.values(locationStats).reduce(
+          (sum, stats) => sum + parseFloat(stats.untappedCapacityFTE), 0
+        ).toFixed(2),
+        productivityLossCost: '$' + Object.values(locationStats).reduce(
+          (sum, stats) => sum + parseInt(stats.productivityLossCost), 0
+        ).toLocaleString()
+      };
+      
+      resultData.push(totalStats);
+      
+      // Populate the Productivity Loss Table
+      resultData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        const locationCell = document.createElement('td');
+        locationCell.textContent = row.location;
+        tr.appendChild(locationCell);
+        
+        const usersCell = document.createElement('td');
+        usersCell.textContent = row.users;
+        tr.appendChild(usersCell);
+        
+        const percentCell = document.createElement('td');
+        percentCell.textContent = row.percentOfTotalUsers;
+        tr.appendChild(percentCell);
+        
+        const untappedCell = document.createElement('td');
+        untappedCell.textContent = row.untappedCapacityFTE;
+        tr.appendChild(untappedCell);
+        
+        const costCell = document.createElement('td');
+        costCell.textContent = row.productivityLossCost;
+        tr.appendChild(costCell);
+        
+        productivityTableBody.appendChild(tr);
+      });
+      
+      // Populate the Underutilization Table
+      const locations = resultData.filter(item => item.location !== 'Total');
+      
+      locations.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        const locationCell = document.createElement('td');
+        locationCell.textContent = row.location;
+        tr.appendChild(locationCell);
+        
+        const countCell = document.createElement('td');
+        countCell.textContent = row.users;
+        tr.appendChild(countCell);
+        
+        const percentCell = document.createElement('td');
+        percentCell.textContent = row.percentOfTotalUsers;
+        tr.appendChild(percentCell);
+        
+        const capacityCell = document.createElement('td');
+        capacityCell.textContent = row.untappedCapacityFTE;
+        capacityCell.innerHTML += `<br>${row.productivityLossCost}`;
+        tr.appendChild(capacityCell);
+        
+        underutilizationTableBody.appendChild(tr);
+      });
+      
+      // Create bar chart for visualization
+      const maxUsers = Math.max(...locations.map(loc => loc.users));
+      
+      locations.forEach(location => {
+        const barHeight = (location.users / maxUsers) * 100;
+        
+        const barContainer = document.createElement('div');
+        barContainer.style.display = 'flex';
+        barContainer.style.flexDirection = 'column';
+        barContainer.style.alignItems = 'center';
+        barContainer.style.flex = '1';
+        
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${barHeight}%`;
+        bar.style.width = '60px';
+        
+        const barValue = document.createElement('div');
+        barValue.className = 'bar-value';
+        barValue.textContent = location.users;
+        bar.appendChild(barValue);
+        
+        const barLabel = document.createElement('div');
+        barLabel.className = 'bar-label';
+        barLabel.textContent = location.location;
+        
+        barContainer.appendChild(bar);
+        barContainer.appendChild(barLabel);
+        barChart.appendChild(barContainer);
+      });
+      
+      return resultData;
+    }
+    
+    // Export as PDF
+    exportPdfBtn.addEventListener('click', function() {
+      if (!tableData.length) {
+        alert('Please upload and process a CSV file first.');
+        return;
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(18);
+      doc.text('ActivTrak Productivity Loss Report', 14, 20);
+      
+      // Add date
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+      
+      // Add settings info
+      doc.text(`Settings: ${hoursPerDay} hours/day, ${daysPerMonth} days/month, $${hourlyRate}/hour`, 14, 40);
+      
+      // Create table for Productivity Loss by Location
+      const prodLossTableRows = Array.from(productivityTableBody.rows).map(row => {
+        return Array.from(row.cells).map(cell => cell.textContent);
+      });
+      
+      doc.autoTable({
+        head: [['Location', 'Users', '% of Total Users', 'Untapped Capacity (FTE)', 'Productivity Loss Cost (Monthly)']],
+        body: prodLossTableRows,
+        startY: 50,
+        headStyles: { fillColor: [0, 102, 204] }
+      });
+      
+      // Create table for Underutilization by Work Mode
+      const underutilTableRows = Array.from(underutilizationTableBody.rows).map(row => {
+        return Array.from(row.cells).map(cell => cell.textContent.replace(/\n/g, ' '));
+      });
+      
+      doc.autoTable({
+        head: [['Location', 'Employee Count', '% of Workforce', 'Untapped Capacity (FTE/Month)']],
+        body: underutilTableRows,
+        startY: doc.lastAutoTable.finalY + 15,
+        headStyles: { fillColor: [0, 102, 204] }
+      });
+      
+      // Save the PDF
+      doc.save('activtrak-productivity-report.pdf');
+    });
+    
+    // Export as CSV
+    exportCsvBtn.addEventListener('click', function() {
+      if (!tableData.length) {
+        alert('Please upload and process a CSV file first.');
+        return;
+      }
+      
+      // Get all rows from the productivity table
+      const rows = Array.from(productivityTableBody.rows).map(row => {
+        return Array.from(row.cells).map(cell => cell.textContent);
+      });
+      
+      // Add header row
+      const headers = ['Location', 'Users', '% of Total Users', 'Untapped Capacity (FTE)', 'Productivity Loss Cost (Monthly)'];
+      rows.unshift(headers);
+      
+      // Convert to CSV
+      let csvContent = rows.map(row => row.join(',')).join('\n');
+      
+      // Create a blob and download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'activtrak-productivity-report.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  </script>
+</body>
+</html>
